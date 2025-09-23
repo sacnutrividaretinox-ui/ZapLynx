@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 // ============================
-// 🔑 Credenciais da Z-API (via Railway → Variables)
+// 🔑 Credenciais da Z-API (Railway → Variables)
 // ============================
 const ZAPI = {
   instanceId: process.env.ZAPI_INSTANCE_ID || "SEU_INSTANCE_ID",
@@ -37,14 +37,10 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
 });
 
-// QR Code (⚠️ aqui usamos Client-Token, o que fez funcionar)
+// QR Code (⚠️ com Client-Token → esse foi o que fez funcionar)
 app.get("/api/qr", async (req, res) => {
   try {
-    console.log("📡 Requisição QR Code iniciada...");
-    const url = `${ZAPI.baseUrl()}/qr-code/image`;
-    console.log("URL chamada:", url);
-
-    const response = await axios.get(url, {
+    const response = await axios.get(`${ZAPI.baseUrl()}/qr-code/image`, {
       headers: { "Client-Token": ZAPI.clientToken },
       timeout: 10000
     });

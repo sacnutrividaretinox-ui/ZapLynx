@@ -1,31 +1,52 @@
-document.getElementById("generateQrBtn").addEventListener("click", async () => {
-  const qrImage = document.getElementById("qrImage");
-  const qrStatus = document.getElementById("qrStatus");
-
-  qrStatus.innerText = "Gerando QR Code...";
-  qrStatus.style.color = "#00bcd4";
-  qrImage.style.display = "none";
-
+// Conectar e mostrar QR Code na tela
+async function connectWhatsapp() {
   try {
-    // Aguarda 2 segundos antes da chamada (evita flood)
-    await new Promise(r => setTimeout(r, 2000));
-
     const res = await fetch("/api/qr");
     const data = await res.json();
 
-    if (data.error) {
-      qrStatus.innerText = `Erro: ${data.error}`;
-      qrStatus.style.color = "red";
-      return;
+    if (data.qrCode) {
+      document.getElementById("qrContainer").innerHTML = `
+        <img src="${data.qrCode}" alt="QR Code" width="250"/>
+        <p>Leia o QR Code no seu WhatsApp para conectar.</p>
+      `;
+    } else {
+      document.getElementById("qrContainer").textContent =
+        "Não foi possível gerar o QR Code.";
     }
-
-    qrImage.src = `data:image/png;base64,${data.qrCode}`;
-    qrImage.style.display = "block";
-    qrStatus.innerText = "QR Code gerado com sucesso!";
-    qrStatus.style.color = "limegreen";
-
   } catch (err) {
-    qrStatus.innerText = `Erro inesperado: ${err.message}`;
-    qrStatus.style.color = "red";
+    document.getElementById("qrContainer").textContent =
+      "Erro ao conectar ao servidor.";
   }
+}
+
+// Enviar mensagem
+async function sendMessage() {
+  const phone = document.getElementById("phone").value;
+  const message = document.getElementById("message").value;
+
+  const res = await fetch("/api/send-message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, message })
+  });
+
+  const data = await res.json();
+  document.getElementById("serverResponse").textContent =
+    JSON.stringify(data, null, 2);
+}
+
+// Atualizar prévia da mensagem
+document.getElementById("message").addEventListener("input", (e) => {
+  document.getElementById("previewText").textContent = e.target.value;
+});
+
+// Upload CSV
+document.getElementById("fileInput").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const text = e.target.result;
+    document.getElementById("csvOutput").textContent = text;
+  };
+  reader.readAsText(file);
 });

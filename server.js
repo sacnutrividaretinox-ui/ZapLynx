@@ -1,6 +1,3 @@
-// ============================
-// 📌 Dependências
-// ============================
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -11,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 // ============================
-// 🔑 Credenciais da Z-API (Railway → Variables)
+// 🔑 Credenciais da Z-API (via Railway → Variables)
 // ============================
 const ZAPI = {
   instanceId: process.env.ZAPI_INSTANCE_ID || "SEU_INSTANCE_ID",
@@ -23,7 +20,7 @@ const ZAPI = {
 };
 
 // ============================
-// 🚀 Servir Front-End (pasta public)
+// 🚀 Servir Front-End
 // ============================
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -40,31 +37,20 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
 });
 
-// QR Code
+// QR Code (⚠️ aqui usamos Client-Token, o que fez funcionar)
 app.get("/api/qr", async (req, res) => {
   try {
-    console.log("🔑 Credenciais carregadas:");
-    console.log("Instance ID:", ZAPI.instanceId);
-    console.log("Token:", ZAPI.token);
-    console.log("Client Token:", ZAPI.clientToken);
+    console.log("📡 Requisição QR Code iniciada...");
+    const url = `${ZAPI.baseUrl()}/qr-code/image`;
+    console.log("URL chamada:", url);
 
-    console.log("🔗 URL chamada:", `${ZAPI.baseUrl()}/qr-code/image`);
-
-    const response = await axios.get(`${ZAPI.baseUrl()}/qr-code/image`, {
+    const response = await axios.get(url, {
       headers: { "Client-Token": ZAPI.clientToken },
       timeout: 10000
     });
 
-    console.log("📥 Resposta completa da Z-API:", response.data);
-
-    const qrCode =
-      response.data?.value ||
-      response.data?.qrCodeBase64 ||
-      response.data?.image ||
-      null;
-
-    if (qrCode) {
-      res.json({ qrCode });
+    if (response.data?.value) {
+      res.json({ qrCode: response.data.value });
     } else {
       res.status(500).json({
         error: "QR Code não retornado pela Z-API",
@@ -80,12 +66,10 @@ app.get("/api/qr", async (req, res) => {
   }
 });
 
-// Enviar mensagem
+// Enviar mensagem (⚠️ também com Client-Token)
 app.post("/api/send-message", async (req, res) => {
   try {
     const { phone, message } = req.body;
-
-    console.log("📨 Enviando mensagem para:", phone);
 
     const response = await axios.post(
       `${ZAPI.baseUrl()}/send-text`,
@@ -106,7 +90,7 @@ app.post("/api/send-message", async (req, res) => {
 // ============================
 // 🚀 Inicializar servidor
 // ============================
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });

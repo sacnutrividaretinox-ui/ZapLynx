@@ -55,8 +55,16 @@ app.get("/api/qr", async (req, res) => {
       timeout: 10000
     });
 
-    if (response.data?.value) {
-      res.json({ qrCode: response.data.value });
+    console.log("📥 Resposta completa da Z-API:", response.data);
+
+    const qrCode =
+      response.data?.value ||
+      response.data?.qrCodeBase64 ||
+      response.data?.image ||
+      null;
+
+    if (qrCode) {
+      res.json({ qrCode });
     } else {
       res.status(500).json({
         error: "QR Code não retornado pela Z-API",

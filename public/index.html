@@ -7,13 +7,16 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Topbar -->
   <header class="topbar">
     <button id="menuToggle" aria-label="Abrir menu" class="icon-btn">☰</button>
     <h1>📲 WhatsApp Micro-SaaS</h1>
     <div id="connStatus" class="badge badge-gray">Checando...</div>
   </header>
 
+  <!-- Layout -->
   <div class="layout">
+    <!-- Sidebar -->
     <aside id="sidebar">
       <nav>
         <a href="#status" class="nav-link">Status</a>
@@ -26,6 +29,10 @@
       </nav>
     </aside>
 
+    <!-- Overlay para mobile -->
+    <div id="overlay"></div>
+
+    <!-- Conteúdo principal -->
     <main>
       <!-- STATUS -->
       <section id="status" class="card">
@@ -140,10 +147,27 @@
     </main>
   </div>
 
+  <!-- Rodapé -->
   <footer class="foot">
     Feito para disparos controlados. Respeite o opt-in dos contatos.
   </footer>
 
   <script src="app.js"></script>
+  <script>
+    // Overlay close no mobile
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const toggle = document.getElementById("menuToggle");
+
+    toggle?.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+      overlay.style.display = sidebar.classList.contains("open") ? "block" : "none";
+    });
+
+    overlay?.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      overlay.style.display = "none";
+    });
+  </script>
 </body>
 </html>

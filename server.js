@@ -1,3 +1,6 @@
+// ============================
+// 📌 Dependências
+// ============================
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -37,7 +40,7 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
 });
 
-// QR Code (⚠️ com Client-Token → esse foi o que fez funcionar)
+// QR Code
 app.get("/api/qr", async (req, res) => {
   try {
     const response = await axios.get(`${ZAPI.baseUrl()}/qr-code/image`, {
@@ -45,8 +48,14 @@ app.get("/api/qr", async (req, res) => {
       timeout: 10000
     });
 
-    if (response.data?.value) {
-      res.json({ qrCode: response.data.value });
+    // Debug no log do servidor
+    console.log("Resposta Z-API QR:", response.data);
+
+    // Captura o base64 (cobre diferentes formatos possíveis)
+    const base64 = response.data?.value || response.data?.qrCode;
+
+    if (base64) {
+      res.json({ qrCode: base64 });
     } else {
       res.status(500).json({
         error: "QR Code não retornado pela Z-API",
@@ -62,7 +71,7 @@ app.get("/api/qr", async (req, res) => {
   }
 });
 
-// Enviar mensagem (⚠️ também com Client-Token)
+// Enviar mensagem
 app.post("/api/send-message", async (req, res) => {
   try {
     const { phone, message } = req.body;

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatsApp SaaS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <aside>
+      <h2>📲 WhatsApp SaaS</h2>
+      <nav>
+        <ul>
+          <li><a href="#contatos">Contatos</a></li>
+          <li><a href="#mensagem">Mensagem</a></li>
+          <li><a href="#preview">Prévia</a></li>
+          <li><a href="#resposta">Resposta</a></li>
+          <li><a href="#qrcode">Conectar WhatsApp</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <!-- Upload CSV -->
+      <section id="contatos">
+        <h3>Upload de Contatos (CSV)</h3>
+        <input type="file" id="fileInput" />
+        <pre id="csvOutput"></pre>
+      </section>
+
+      <!-- Enviar Mensagem -->
+      <section id="mensagem">
+        <h3>Enviar Mensagem</h3>
+        <input type="text" id="phone" placeholder="Número com DDD" />
+        <textarea id="message" placeholder="Digite sua mensagem..."></textarea>
+        <button onclick="sendMessage()">Enviar</button>
+      </section>
+
+      <!-- Prévia -->
+      <section id="preview">
+        <h3>Prévia da Mensagem</h3>
+        <p id="previewText">Sua mensagem aparecerá aqui...</p>
+      </section>
+
+      <!-- Resposta -->
+      <section id="resposta">
+        <h3>Resposta da API</h3>
+        <pre id="serverResponse"></pre>
+      </section>
+
+      <!-- QR Code -->
+      <section id="qrcode">
+        <h3>Conectar WhatsApp</h3>
+        <button onclick="connectWhatsapp()">Gerar QR Code</button>
+        <div id="qrContainer"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

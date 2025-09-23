@@ -74,7 +74,19 @@ generateQrBtn?.addEventListener('click', async ()=>{
     const res = await fetch('/api/qr');
     const data = await res.json();
     if(data?.qrCode){
-      qrImage.src = `data:image/png;base64,${data.qrCode}`;
+      let src = data.qrCode;
+
+      // Se for apenas base64 PNG
+      if (/^[A-Za-z0-9+/=]+$/.test(src)) {
+        src = `data:image/png;base64,${src}`;
+      }
+
+      // Se for SVG
+      if (src.trim().startsWith("<svg")) {
+        src = `data:image/svg+xml;utf8,${encodeURIComponent(src)}`;
+      }
+
+      qrImage.src = src;
       qrImage.hidden = false;
       qrStatus.textContent = 'QR Code pronto! Escaneie no WhatsApp.';
       log('QR code gerado com sucesso', 'ok');
@@ -260,26 +272,23 @@ sendBulkBtn?.addEventListener('click', async ()=>{
   if(!contacts.length){ log('Nenhum contato carregado.', 'err'); return; }
   const message = (messageInput.value || '').trim();
   if(!message){ log('Digite a mensagem para envio em massa.', 'err'); return; }
-  const delay = Math.max(0, +bulkDelayInput.value || 0);
-  sendBulkBtn.disabled = true; sendBulkBtn.textContent = 'Enviando em Massa…';
-  let success=0, fail=0;
-  for(let i=0; i<contacts.length; i++){
-    const {phone, name} = contacts[i];
-    const personalized = message.replace(/\{\{nome\}\}/gi, name || '');
+  const delay = +bulkDelayInput.value || 0;
+  for(const c of contacts){
     try{
+      if(delay) await sleep(delay);
       const res = await fetch('/api/send-message', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ phone, message: personalized })
+        body: JSON.stringify({ phone:c.phone, message })
       });
       const data = await res.json();
-      if(res.ok){ success++; log(`OK ${i+1}/${contacts.length} → ${phone}`, 'ok'); }
-      else{ fail++; log(`ERRO ${i+1}/${contacts.length} → ${phone}: ${data?.error||'Falha'}`, 'err'); }
+      if(res.ok){
+        log(`Enviado para ${c.phone}.`, 'ok', data);
+      }else{
+        throw new Error(data?.error || 'Falha no envio');
+      }
     }catch(err){
-      fail++; log(`ERRO ${i+1}/${contacts.length} → ${phone}: ${err.message}`, 'err');
+      log(`Erro envio para ${c.phone}: ${err.message}`, 'err');
     }
-    if(i < contacts.length-1 && delay) await sleep(delay);
   }
-  log(`Massa finalizada. Sucesso: ${success} | Falhas: ${fail}`, fail? 'err':'ok');
-  sendBulkBtn.disabled = false; sendBulkBtn.textContent = 'Enviar em Massa';
 });

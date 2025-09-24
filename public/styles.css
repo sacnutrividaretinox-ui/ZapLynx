@@ -1,45 +1,79 @@
-body {
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: #fff;
+/* Reset */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Fundo */
+body {
+  background-color: #111;
+  color: #fff;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100vh;
 }
 
+/* Container principal */
 .container {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
+  width: 100%;
 }
 
+/* Card central */
 .card {
   background: #1e1e1e;
-  padding: 20px;
+  padding: 30px;
   border-radius: 10px;
   text-align: center;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
-  width: 300px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.6);
+  width: 350px;
 }
 
+/* Título */
+.card h2 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Botão */
 button {
-  background: red;
+  background-color: #ff0000;
+  color: #fff;
   border: none;
   padding: 10px 20px;
-  border-radius: 5px;
-  color: white;
-  font-size: 16px;
+  margin: 10px 0;
   cursor: pointer;
-  margin-top: 10px;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: 0.2s;
 }
 
 button:hover {
-  background: darkred;
+  background-color: #cc0000;
 }
 
-.qrcode-area {
-  margin-top: 15px;
+/* Área do QR Code */
+#qrcodeArea {
+  margin: 15px 0;
+}
+
+#qrcodeArea img {
+  margin-top: 10px;
+  width: 200px;
+  height: 200px;
+  border: 2px solid #444;
+  border-radius: 8px;
+}
+
+/* Status */
+#status {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: bold;
 }

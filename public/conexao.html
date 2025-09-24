@@ -12,37 +12,35 @@
       <h2>🔗 Conectar via QR Code</h2>
       <button onclick="gerarQRCode()">Gerar QR Code</button>
       <div id="qrcodeArea">
-        <p>⚠ Clique em "Gerar QR Code" para conectar</p>
+        <p id="status">⚠ Nenhum QR retornado</p>
+        <img id="qrcode" src="" alt="QR Code" style="display:none;">
       </div>
-      <p id="status">❌ Não conectado</p>
     </div>
   </div>
 
   <script>
     async function gerarQRCode() {
-      const qrcodeArea = document.getElementById("qrcodeArea");
       const status = document.getElementById("status");
+      const img = document.getElementById("qrcode");
+
+      status.textContent = "⏳ Gerando QR Code...";
+      img.style.display = "none";
 
       try {
         const res = await fetch("/api/qrcode");
-        if (!res.ok) throw new Error("Erro HTTP " + res.status);
+        if (!res.ok) throw new Error("Erro ao buscar QR");
 
         const data = await res.json();
-
         if (data.qr) {
-          qrcodeArea.innerHTML = `<img src="data:image/png;base64,${data.qr}" alt="QR Code">`;
-          status.innerText = "✅ QR Code gerado, escaneie no WhatsApp!";
-          status.style.color = "limegreen";
+          img.src = data.qr;
+          img.style.display = "block";
+          status.textContent = "✅ Escaneie o QR Code";
         } else {
-          qrcodeArea.innerHTML = `<p style="color:red;">❌ Nenhum QR retornado</p>`;
-          status.innerText = "❌ Não conectado";
-          status.style.color = "red";
+          status.textContent = "❌ Nenhum QR retornado";
         }
       } catch (err) {
         console.error("Erro ao gerar QR:", err);
-        qrcodeArea.innerHTML = `<p style="color:red;">❌ Erro ao gerar QR Code</p>`;
-        status.innerText = "❌ Não conectado";
-        status.style.color = "red";
+        status.textContent = "❌ Erro ao gerar QR Code";
       }
     }
   </script>

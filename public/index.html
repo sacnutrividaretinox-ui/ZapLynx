@@ -5,15 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
   <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Logo -->
-  <img src="logo.png" alt="ZapLynx Logo" class="logo">
-
-  <h1>ZapLynx 🚀</h1>
-
-  <!-- Botão de alternância de tema -->
-  <button id="toggleTheme">🌙 Tema Dark</button>
+  <div class="header">
+    <img src="logo.png" alt="ZapLynx Logo" class="logo">
+    <h1>ZapLynx 🚀</h1>
+    <div class="theme-switch">
+      <input type="checkbox" id="toggleTheme">
+      <label for="toggleTheme"></label>
+    </div>
+  </div>
 
   <!-- Card de conexão -->
   <div class="card">
@@ -37,22 +40,20 @@
     <p id="sendStatus" class="status">⏳ Aguardando...</p>
   </div>
 
-  <!-- Scripts -->
   <script src="app.js"></script>
   <script>
     // Alternância de tema
     const body = document.body;
-    const btn = document.getElementById("toggleTheme");
+    const themeToggle = document.getElementById("toggleTheme");
 
     function setTheme(theme) {
       body.className = theme;
       localStorage.setItem("theme", theme);
-      btn.innerText = theme === "dark" ? "🌙 Tema Dark" : "☀️ Tema White";
+      themeToggle.checked = theme === "white";
     }
 
-    btn.addEventListener("click", () => {
-      const newTheme = body.classList.contains("dark") ? "white" : "dark";
-      setTheme(newTheme);
+    themeToggle.addEventListener("change", () => {
+      setTheme(themeToggle.checked ? "white" : "dark");
     });
 
     // Carregar tema salvo

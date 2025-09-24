@@ -1,19 +1,119 @@
-/* Logo */
-.logo {
-  max-width: 220px;
-  margin: 20px auto;
-  display: block;
-  filter: drop-shadow(0 0 8px #ff0000); /* cor da fonte */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: background 0.3s, color 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Botão de alternância */
-button#toggleTheme {
-  margin-bottom: 20px;
-  padding: 10px 20px;
+/* Header */
+.header {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.logo {
+  max-width: 160px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: white; /* padrão */
+}
+
+/* Cards */
+.card {
+  background: #161b22;
+  border-radius: 12px;
+  padding: 25px;
+  margin: 20px;
+  width: 360px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+.card h2 {
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: white;
+}
+
+input, textarea, select {
+  width: 100%;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
   border: none;
-  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+}
+
+button {
+  background: #ff0000;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  width: 100%;
+}
+
+button:hover {
+  background: #cc0000;
+}
+
+.status {
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* Switch de tema */
+.theme-switch {
+  margin-top: 15px;
+}
+
+.theme-switch input {
+  height: 0;
+  width: 0;
+  visibility: hidden;
+}
+
+.theme-switch label {
+  cursor: pointer;
+  text-indent: -9999px;
+  width: 50px;
+  height: 26px;
+  background: #444;
+  display: block;
+  border-radius: 100px;
+  position: relative;
+}
+
+.theme-switch label:after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 90px;
+  transition: 0.3s;
+}
+
+.theme-switch input:checked + label {
+  background: #ff0000;
+}
+
+.theme-switch input:checked + label:after {
+  left: calc(100% - 4px - 18px);
 }
 
 /* Tema Dark */
@@ -22,14 +122,9 @@ body.dark {
   color: #fff;
 }
 
-body.dark h1, 
-body.dark .card h2 {
-  color: #ff0000;
-}
-
-body.dark #toggleTheme {
-  background: #1e90ff;
-  color: white;
+body.dark .card {
+  background: #161b22;
+  color: #fff;
 }
 
 /* Tema White */
@@ -38,18 +133,13 @@ body.white {
   color: #111;
 }
 
-body.white .card {
-  background: #fff;
-  border: 1px solid #ccc;
-  color: #111;
-}
-
 body.white h1, 
 body.white .card h2 {
   color: #ff0000;
 }
 
-body.white #toggleTheme {
-  background: #333;
-  color: white;
+body.white .card {
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }

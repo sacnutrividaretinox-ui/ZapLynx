@@ -1,76 +1,68 @@
-// public/app.js
-
 document.addEventListener("DOMContentLoaded", () => {
-  const qrResult = document.getElementById("qrResult");
-  const statusResult = document.getElementById("statusResult");
   const btnQr = document.getElementById("btnQr");
-  const btnConectarNumero = document.getElementById("btnConectarNumero");
-  const inputNumero = document.getElementById("numero");
+  const qrImg = document.getElementById("qrcode");
+  const statusText = document.getElementById("status");
 
-  // Função para gerar QR Code
+  const btnSend = document.getElementById("btnSend");
+  const sendStatus = document.getElementById("sendStatus");
+
+  // Gerar QR Code
   btnQr.addEventListener("click", async () => {
-    qrResult.innerHTML = "⏳ Gerando QR Code...";
+    statusText.textContent = "⏳ Gerando QR Code...";
+    qrImg.style.display = "none";
+
     try {
       const res = await fetch("/api/qrcode");
       const data = await res.json();
 
-      if (data.value) {
-        qrResult.innerHTML = `<img src="${data.value}" alt="QR Code" width="250"/>`;
+      if (data.qr) {
+        qrImg.src = data.qr;
+        qrImg.style.display = "block";
+        statusText.textContent = "✅ Escaneie o QR Code no WhatsApp";
+        statusText.style.color = "limegreen";
       } else {
-        qrResult.innerHTML = "❌ Nenhum QR retornado";
+        statusText.textContent = "❌ Nenhum QR retornado";
+        statusText.style.color = "red";
       }
     } catch (err) {
       console.error("Erro ao gerar QR:", err);
-      qrResult.innerHTML = "❌ Erro ao gerar QR Code";
+      statusText.textContent = "❌ Erro ao gerar QR Code";
+      statusText.style.color = "red";
     }
   });
 
-  // Função para conectar número
-  btnConectarNumero.addEventListener("click", async () => {
-    const numero = inputNumero.value.trim();
-    if (!numero) {
-      statusResult.innerHTML = "❌ Informe um número!";
+  // Enviar Mensagem
+  btnSend.addEventListener("click", async () => {
+    const phone = document.getElementById("phone").value.trim();
+    const message = document.getElementById("message").value.trim();
+
+    if (!phone || !message) {
+      sendStatus.textContent = "⚠ Informe número e mensagem";
+      sendStatus.style.color = "orange";
       return;
     }
 
-    statusResult.innerHTML = "⏳ Conectando...";
+    sendStatus.textContent = "⏳ Enviando...";
+
     try {
-      const res = await fetch("/api/connect", {
+      const res = await fetch("/api/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ numero }),
+        body: JSON.stringify({ phone, message })
       });
 
       const data = await res.json();
-      if (data.success) {
-        statusResult.innerHTML = `✅ Conectado: ${numero}`;
+      if (data.error) {
+        sendStatus.textContent = "❌ Erro: " + data.error;
+        sendStatus.style.color = "red";
       } else {
-        statusResult.innerHTML = `❌ Falha: ${data.error || "Erro desconhecido"}`;
+        sendStatus.textContent = "✅ Mensagem enviada!";
+        sendStatus.style.color = "limegreen";
       }
     } catch (err) {
-      console.error("Erro ao conectar número:", err);
-      statusResult.innerHTML = "❌ Erro na conexão";
+      console.error("Erro ao enviar:", err);
+      sendStatus.textContent = "❌ Erro ao enviar mensagem";
+      sendStatus.style.color = "red";
     }
   });
-
-  // Função para checar status a cada 5s
-  async function checkStatus() {
-    try {
-      const res = await fetch("/api/status");
-      const data = await res.json();
-
-      if (data.connected) {
-        statusResult.innerHTML = `✅ Número conectado: ${data.number || "Desconhecido"}`;
-      } else {
-        statusResult.innerHTML = "❌ Não conectado";
-      }
-    } catch (err) {
-      console.error("Erro ao checar status:", err);
-      statusResult.innerHTML = "❌ Erro ao checar status";
-    }
-  }
-
-  // Checar status automaticamente a cada 5 segundos
-  setInterval(checkStatus, 5000);
-  checkStatus(); // rodar já ao carregar
 });

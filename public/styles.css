@@ -16,29 +16,22 @@ body {
   height: 100vh;
 }
 
-/* Container principal */
+/* Container */
 .container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
   align-items: center;
-  width: 100%;
 }
 
-/* Card central */
+/* Card */
 .card {
   background: #1e1e1e;
-  padding: 30px;
+  padding: 20px;
   border-radius: 10px;
   text-align: center;
-  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.6);
-  width: 350px;
-}
-
-/* Título */
-.card h2 {
-  margin-bottom: 15px;
-  font-size: 18px;
-  font-weight: bold;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+  width: 320px;
 }
 
 /* Botão */
@@ -58,13 +51,19 @@ button:hover {
   background-color: #cc0000;
 }
 
-/* Área do QR Code */
-#qrcodeArea {
-  margin: 15px 0;
+/* Inputs */
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
 }
 
-#qrcodeArea img {
-  margin-top: 10px;
+/* QR Code */
+#qrcode {
+  margin-top: 15px;
   width: 200px;
   height: 200px;
   border: 2px solid #444;
@@ -72,7 +71,7 @@ button:hover {
 }
 
 /* Status */
-#status {
+#status, #sendStatus {
   margin-top: 10px;
   font-size: 14px;
   font-weight: bold;

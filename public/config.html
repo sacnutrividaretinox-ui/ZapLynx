@@ -19,4 +19,12 @@
   </aside>
   <main>
     <h1>Configurações</h1>
-    <button onclick="
+    <button onclick="baixarCSV()">📥 Baixar CSV</button>
+    <button onclick="baixarJSON()">📥 Baixar JSON</button>
+  </main>
+  <script>
+    function baixarCSV() { window.location.href = "/api/export/csv"; }
+    function baixarJSON() { window.location.href = "/api/export/json"; }
+  </script>
+</body>
+</html>

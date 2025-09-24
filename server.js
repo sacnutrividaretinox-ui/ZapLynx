@@ -1,146 +1,125 @@
+// ============================
+// 📌 Dependências
+// ============================
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const axios = require("axios");
-const sqlite3 = require("sqlite3").verbose();
-
-console.log("🔄 Inicializando aplicação...");
+const path = require("path");
+const db = require("./db"); // importa o SQLite
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ============================
+// 🔑 Credenciais da Z-API
+// ============================
+const ZAPI = {
+  instanceId: process.env.ZAPI_INSTANCE_ID || "SEU_INSTANCE_ID",
+  token: process.env.ZAPI_TOKEN || "SEU_TOKEN",
+  clientToken: process.env.ZAPI_CLIENT_TOKEN || "SEU_CLIENT_TOKEN",
+  baseUrl() {
+    return `https://api.z-api.io/instances/${this.instanceId}/token/${this.token}`;
+  }
+};
+
+// ============================
+// 🚀 Servir Front-End
+// ============================
 app.use(express.static(path.join(__dirname, "public")));
-
-console.log("✅ Middleware configurado");
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // ============================
-// 🔹 Banco de Dados SQLite
+// ✅ Rotas
 // ============================
-const db = new sqlite3.Database(path.join(__dirname, "data.db"), (err) => {
-  if (err) {
-    console.error("❌ Erro ao abrir banco:", err.message);
-  } else {
-    console.log("✅ Banco de dados SQLite iniciado");
-    db.run(`
-      CREATE TABLE IF NOT EXISTS logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        campanha TEXT,
-        mensagem TEXT,
-        status TEXT,
-        criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log("✅ Tabela logs verificada/criada");
+
+// Status
+app.get("/api/status", (req, res) => {
+  res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
+});
+
+// QR Code
+app.get("/api/qr", async (req, res) => {
+  try {
+    const response = await axios.get(`${ZAPI.baseUrl()}/qr-code/image`, {
+      headers: { "Client-Token": ZAPI.clientToken },
+      timeout: 10000
+    });
+
+    if (response.data?.value) {
+      res.json({ qrCode: response.data.value });
+    } else {
+      res.status(500).json({
+        error: "QR Code não retornado pela Z-API",
+        raw: response.data
+      });
+    }
+  } catch (err) {
+    console.error("❌ Erro na rota /api/qr:", err.response?.data || err.message);
+    res.status(500).json({
+      error: "Erro ao gerar QR Code",
+      details: err.response?.data || err.message
+    });
   }
 });
 
-// ============================
-// 🔹 Endpoint de teste
-// ============================
-app.get("/ping", (req, res) => {
-  console.log("📡 Requisição recebida em /ping");
-  res.json({ pong: true });
-});
-
-// ============================
-// 🔹 Endpoint QR Code Z-API
-// ============================
-app.get("/api/qr", async (req, res) => {
-  console.log("📡 Requisição recebida em /api/qr");
-
+// Enviar mensagem + salvar no banco
+app.post("/api/send-message", async (req, res) => {
   try {
-    const { ZAPI_INSTANCE_ID, ZAPI_TOKEN } = process.env;
+    const { phone, message } = req.body;
 
-    if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {
-      console.error("❌ Variáveis da Z-API não configuradas");
-      return res.status(500).json({ error: "Credenciais da Z-API ausentes" });
-    }
-
-    const response = await axios.get(
-      `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/qr-code/image`,
-      { responseType: "stream" }
+    // salvar no banco antes de enviar
+    db.run(
+      "INSERT INTO messages (phone, message, status) VALUES (?, ?, ?)",
+      [phone, message, "pending"],
+      function (err) {
+        if (err) {
+          console.error("❌ Erro ao salvar no SQLite:", err.message);
+        } else {
+          console.log("💾 Mensagem salva no banco com id:", this.lastID);
+        }
+      }
     );
 
-    res.setHeader("Content-Type", "image/png");
-    response.data.pipe(res);
+    // enviar via Z-API
+    const response = await axios.post(
+      `${ZAPI.baseUrl()}/send-text`,
+      { phone, message },
+      { headers: { "Client-Token": ZAPI.clientToken } }
+    );
 
-    console.log("✅ QR Code retornado com sucesso");
+    // atualizar status no banco
+    db.run(
+      "UPDATE messages SET status = ? WHERE phone = ? AND message = ?",
+      ["sent", phone, message]
+    );
+
+    res.json(response.data);
   } catch (err) {
-    console.error("❌ Erro no endpoint /api/qr:", err.message);
-    res.status(500).json({ error: "Erro ao gerar QR Code" });
+    console.error("❌ Erro no envio:", err.response?.data || err.message);
+    res.status(500).json({
+      error: err.message,
+      details: err.response?.data || null
+    });
   }
 });
 
-// ============================
-// 🔹 Endpoint Dashboard
-// ============================
-app.get("/api/dashboard", (req, res) => {
-  const queries = {
-    hoje: `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em)=DATE('now')`,
-    ontem: `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em)=DATE('now','-1 day')`,
-    seteDias: `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em)>=DATE('now','-7 day')`,
-    trintaDias: `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em)>=DATE('now','-30 day')`,
-    umAno: `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em)>=DATE('now','-1 year')`
-  };
-
-  const stats = {};
-  let done = 0;
-
-  Object.keys(queries).forEach((key) => {
-    db.get(queries[key], [], (err, row) => {
-      if (err) {
-        console.error(`Erro no dashboard (${key}):`, err.message);
-        stats[key] = 0;
-      } else {
-        stats[key] = row.total;
-      }
-      done++;
-      if (done === Object.keys(queries).length) {
-        res.json(stats);
-      }
-    });
-  });
-});
-
-// ============================
-// 🔹 Endpoint Histórico
-// ============================
-app.get("/api/historico", (req, res) => {
-  db.all("SELECT * FROM logs ORDER BY campanha, criado_em DESC", [], (err, rows) => {
+// Histórico de mensagens
+app.get("/api/messages", (req, res) => {
+  db.all("SELECT * FROM messages ORDER BY created_at DESC", [], (err, rows) => {
     if (err) {
-      console.error("Erro no histórico:", err.message);
-      return res.status(500).json({ error: "Erro ao carregar histórico" });
+      return res.status(500).json({ error: err.message });
     }
-    const grouped = {};
-    rows.forEach(log => {
-      if (!grouped[log.campanha]) grouped[log.campanha] = [];
-      grouped[log.campanha].push(log);
-    });
-    res.json(grouped);
+    res.json(rows);
   });
 });
 
 // ============================
-// 🔹 Endpoint Gráfico por campanha
+// 🚀 Inicializar servidor
 // ============================
-app.get("/api/historico/:campanha", (req, res) => {
-  db.all(
-    "SELECT status, COUNT(*) as total FROM logs WHERE campanha = ? GROUP BY status",
-    [req.params.campanha],
-    (err, rows) => {
-      if (err) {
-        console.error("Erro gráfico da campanha:", err.message);
-        return res.status(500).json({ error: "Erro ao carregar gráfico da campanha" });
-      }
-      res.json(rows);
-    }
-  );
-});
-
-// ============================
-// 🔹 Inicialização
-// ============================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });

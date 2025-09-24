@@ -1,18 +1,28 @@
-const sqlite3 = require("sqlite3").verbose();
+// db.js
 const path = require("path");
+const sqlite3 = require("sqlite3").verbose();
 
-// Banco salvo como arquivo local
-const db = new sqlite3.Database(path.join(__dirname, "data.db"));
+// Caminho do arquivo do banco
+const dbPath = path.join(__dirname, "data.db");
 
-// Criar tabela se não existir
+// Criar ou conectar banco
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error("❌ Erro ao conectar no SQLite:", err.message);
+  } else {
+    console.log("✅ Conectado ao SQLite:", dbPath);
+  }
+});
+
+// Criar tabela de mensagens se não existir
 db.serialize(() => {
   db.run(`
-    CREATE TABLE IF NOT EXISTS logs (
+    CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      campanha TEXT,
-      mensagem TEXT,
-      status TEXT,
-      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+      phone TEXT NOT NULL,
+      message TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 });

@@ -1,91 +1,53 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WhatsApp Micro-SaaS</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZapLynx – Micro SaaS</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <h2>ZapLynx</h2>
-      <ul>
-        <li><button onclick="showSection('inicio')">🏠 Início</button></li>
-        <li><button onclick="showSection('dashboard')">📊 Dashboard</button></li>
-        <li><button onclick="showSection('extrair')">📥 Extrair Contatos</button></li>
-        <li><button onclick="showSection('perfil')">📱 Perfil</button></li>
-        <li><button onclick="showSection('historico')">📜 Histórico</button></li>
-        <li><button onclick="showSection('templates')">📝 Templates</button></li>
-      </ul>
-    </aside>
+  <div class="container">
+    <h1>ZapLynx 🚀</h1>
 
-    <!-- Conteúdo principal -->
-    <main class="content">
-      <!-- Início -->
-      <section id="inicio" class="active card">
-        <h2>Bem-vindo 👋</h2>
-        <p>Aqui você encontra vídeos tutoriais e instruções.</p>
-      </section>
+    <!-- QR Code -->
+    <section class="card">
+      <h2>Conectar WhatsApp</h2>
+      <button id="generateQrBtn">Gerar QR Code</button>
+      <div id="qrStatus">Aguardando ação...</div>
+      <img id="qrImage" alt="QR Code"/>
+    </section>
 
-      <!-- Dashboard -->
-      <section id="dashboard" class="card">
-        <h2>Dashboard</h2>
-        <p>Estatísticas das mensagens enviadas.</p>
-      </section>
+    <!-- Enviar mensagem -->
+    <section class="card">
+      <h2>Enviar Mensagem</h2>
+      <form id="sendForm">
+        <input type="text" id="phone" placeholder="Número (com DDI/DD)" required/>
+        <textarea id="message" placeholder="Digite sua mensagem" required></textarea>
+        <button type="submit">Enviar</button>
+      </form>
+      <div id="sendStatus"></div>
+    </section>
 
-      <!-- Extrair contatos -->
-      <section id="extrair" class="card">
-        <h2>Extrair Contatos</h2>
-        <p>Funcionalidade para capturar contatos de comunidades.</p>
-      </section>
-
-      <!-- Perfil / Conectar Número -->
-      <section id="perfil" class="card">
-        <h2>Perfil / Conectar Número</h2>
-        <button id="btnGerarQr" class="btn-primary">Gerar QR Code</button>
-        <div class="qr-container">
-          <img id="qrImage" alt="QR Code aparecerá aqui" />
-        </div>
-      </section>
-
-      <!-- Histórico -->
-      <section id="historico" class="card">
-        <h2>Histórico</h2>
-        <p>Logs de mensagens disparadas, agrupadas por campanhas.</p>
-      </section>
-
-      <!-- Templates -->
-      <section id="templates" class="card">
-        <h2>Templates</h2>
-        <p>Modelos de mensagens salvas para reuso.</p>
-      </section>
-    </main>
+    <!-- Histórico -->
+    <section class="card">
+      <h2>Histórico de Mensagens</h2>
+      <button id="refreshHistoryBtn">🔄 Atualizar</button>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Telefone</th>
+            <th>Mensagem</th>
+            <th>Status</th>
+            <th>Criado em</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
   </div>
 
-  <!-- Botão flutuante de suporte -->
-  <button id="btnSuporte" class="btn-suporte">💬 Suporte</button>
-
-  <script>
-    // Alterna entre seções
-    function showSection(id) {
-      document.querySelectorAll("main section").forEach(sec => sec.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-    }
-
-    // Botão de QR Code → usa src direto
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.getElementById("btnGerarQr");
-      const img = document.getElementById("qrImage");
-
-      if (btn) {
-        btn.addEventListener("click", () => {
-          img.src = "/api/qr?" + new Date().getTime(); 
-          img.alt = "QR Code pronto para escanear";
-        });
-      }
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

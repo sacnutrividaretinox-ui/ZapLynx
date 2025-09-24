@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ZapLynx 🚀</title>
   <link rel="stylesheet" href="styles.css"/>
@@ -10,15 +10,15 @@
   <div class="container">
     <h1>ZapLynx 🚀</h1>
 
-    <!-- ================== QR Code ================== -->
+    <!-- QR Code -->
     <section class="card">
       <h2>Conectar WhatsApp</h2>
       <button id="btnQr">Gerar QR Code</button>
       <p id="qrStatus">Aguardando ação...</p>
-      <img id="qrImage" alt="QR Code" style="display:none; max-width:250px; margin-top:10px; border:4px solid #38bdf8; border-radius:12px;"/>
+      <img id="qrImage" alt="QR Code"/>
     </section>
 
-    <!-- ================== Enviar Mensagem ================== -->
+    <!-- Enviar mensagem -->
     <section class="card">
       <h2>Enviar Mensagem</h2>
       <div class="form">
@@ -29,7 +29,30 @@
       <div id="sendStatus"></div>
     </section>
 
-    <!-- ================== Histórico ================== -->
+    <!-- Estatísticas -->
+    <section class="card">
+      <h2>📊 Estatísticas</h2>
+      <div class="stats">
+        <div class="stat">
+          <span id="statTotal">0</span>
+          <small>Total</small>
+        </div>
+        <div class="stat">
+          <span id="statSent">0</span>
+          <small>Enviadas</small>
+        </div>
+        <div class="stat">
+          <span id="statPending">0</span>
+          <small>Pendentes</small>
+        </div>
+        <div class="stat">
+          <span id="statFailed">0</span>
+          <small>Falhas</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Histórico -->
     <section class="card">
       <h2>Histórico de Mensagens</h2>
       <button id="refreshBtn">🔄 Atualizar</button>
@@ -43,9 +66,7 @@
             <th>Criado em</th>
           </tr>
         </thead>
-        <tbody id="history">
-          <!-- preenchido via app.js -->
-        </tbody>
+        <tbody id="history"></tbody>
       </table>
     </section>
   </div>

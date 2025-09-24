@@ -6,9 +6,9 @@ const path = require("path");
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"))); // serve HTML
+app.use(express.static(path.join(__dirname, "public"))); // serve frontend
 
-// 🔑 Credenciais (Railway → Variables)
+// 🔑 Variáveis de ambiente (configure no Railway)
 const ZAPI = {
   instanceId: process.env.ZAPI_INSTANCE_ID,
   token: process.env.ZAPI_TOKEN,
@@ -17,26 +17,31 @@ const ZAPI = {
 
 // =================== ROTAS =================== //
 
-// 📌 Gerar QR Code (com fallback automático)
+// 📌 Gerar QR Code (testa vários endpoints)
 app.get("/api/qrcode", async (req, res) => {
   try {
     const baseUrl = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}`;
-    
-    // Tenta primeiro o endpoint padrão
-    let response = await axios.get(`${baseUrl}/qr-code`).catch(() => null);
 
-    // Se não deu, tenta endpoint alternativo
-    if (!response || !response.data.qrCode) {
-      console.log("⚠️ Tentando fallback em /qr-code/image...");
-      response = await axios.get(`${baseUrl}/qr-code/image`).catch(() => null);
+    const endpoints = ["/qr-code", "/qr-code/image", "/qr-code/base64"];
+    let response = null;
+
+    for (const endpoint of endpoints) {
+      console.log(`🔎 Testando endpoint: ${endpoint}`);
+      try {
+        response = await axios.get(baseUrl + endpoint);
+
+        if (response.data && (response.data.qrCode || response.data.image)) {
+          console.log(`✅ QR Code encontrado em ${endpoint}`);
+          return res.json({
+            qr: response.data.qrCode || response.data.image
+          });
+        }
+      } catch (e) {
+        console.log(`⚠️ Falha em ${endpoint}`);
+      }
     }
 
-    // Se ainda não achou, retorna erro
-    if (!response || !response.data) {
-      throw new Error("Nenhum QR retornado pela Z-API");
-    }
-
-    res.json({ qr: response.data.qrCode || response.data.image || null });
+    throw new Error("Nenhum endpoint retornou QR válido da Z-API");
   } catch (error) {
     console.error("Erro ao buscar QR Code:", error.response?.data || error.message);
     res.status(500).json({

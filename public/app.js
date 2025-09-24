@@ -12,19 +12,18 @@ btnQr?.addEventListener("click", async () => {
   try {
     const res = await fetch("/api/qr");
     const data = await res.json();
-    console.log("📥 Resposta /api/qr:", data);
+    console.log("📥 Resposta bruta /api/qr:", data);
 
-    if (data.qrCode) {
-      qrImg.src = data.qrCode;
+    // Tentativas de localizar QR
+    if (data.qrCode || data.base64 || data.value || data.url) {
+      const qr = data.qrCode || data.base64 || data.value || data.url;
+      qrImg.src = qr.startsWith("data:image") ? qr : `data:image/png;base64,${qr}`;
       qrImg.style.display = "block";
-      qrStatus.textContent = "✅ QR Code gerado com sucesso!";
+      qrStatus.textContent = "✅ QR Code gerado!";
       qrStatus.style.color = "#22c55e";
-    } else if (data.debug) {
-      qrStatus.textContent = "⚠️ Formato inesperado (veja console)";
-      qrStatus.style.color = "#fbbf24";
     } else {
-      qrStatus.textContent = "❌ " + (data.error || "Erro ao gerar QR");
-      qrStatus.style.color = "#ef4444";
+      qrStatus.textContent = "⚠️ Veja console → resposta bruta";
+      qrStatus.style.color = "#fbbf24";
     }
   } catch (err) {
     qrStatus.textContent = "❌ Erro inesperado: " + err.message;
@@ -56,7 +55,7 @@ btnConnectNumber?.addEventListener("click", async () => {
       body: JSON.stringify({ number })
     });
     const data = await res.json();
-    console.log("📥 Resposta /api/connect-number:", data);
+    console.log("📥 Resposta bruta /api/connect-number:", data);
 
     if (data.error) {
       connectStatus.textContent = "❌ " + data.error;

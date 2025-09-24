@@ -40,7 +40,7 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
 });
 
-// 📌 QR CODE (com debug)
+// 📌 QR CODE (debug total)
 app.get("/api/qr", async (req, res) => {
   try {
     const urls = [
@@ -62,26 +62,16 @@ app.get("/api/qr", async (req, res) => {
     }
 
     const data = response?.data;
-    if (!data) return res.status(500).json({ error: "Nenhum QR retornado" });
+    console.log("🔍 Resposta completa da Z-API (QR):", data);
 
-    let qrCode = data.value || data.base64 || data.qrCode || data.url;
-
-    if (!qrCode) {
-      console.log("🔍 QR Code bruto da Z-API:", data);
-      return res.json({ debug: true, raw: data });
-    }
-
-    if (!qrCode.startsWith("data:image") && !qrCode.startsWith("http")) {
-      qrCode = `data:image/png;base64,${qrCode}`;
-    }
-
-    res.json({ qrCode });
+    // Sempre devolver o JSON bruto
+    return res.json(data);
   } catch (err) {
-    res.status(500).json({ error: "Erro ao gerar QR", details: err.message });
+    res.status(500).json({ error: "Erro ao chamar Z-API", details: err.message });
   }
 });
 
-// 📌 Conectar pelo número (com debug)
+// 📌 Conectar pelo número (debug total — pode não ser suportado)
 app.post("/api/connect-number", async (req, res) => {
   try {
     const { number } = req.body;

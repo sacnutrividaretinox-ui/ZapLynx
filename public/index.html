@@ -3,61 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZapLynx 🚀</title>
+  <title>ZapLynx Cloud</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body>
-  <!-- Header só com a logo -->
-  <div class="header">
-    <img src="logo.png" alt="ZapLynx Logo" class="logo">
-    <div class="theme-switch">
-      <input type="checkbox" id="toggleTheme">
-      <label for="toggleTheme"></label>
-    </div>
-  </div>
+<body class="pro dark">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <img src="logo.png" class="logo">
+    <ul>
+      <li onclick="showTab('dashboard')">📊 Dashboard</li>
+      <li onclick="showTab('conexao')">🔗 Conexão</li>
+      <li onclick="showTab('mensagem')">💬 Mensagens</li>
+      <li onclick="showTab('contatos')">👥 Contatos</li>
+    </ul>
+  </aside>
 
-  <!-- Card de conexão -->
-  <div class="card">
-    <h2>Conectar WhatsApp</h2>
-    <select id="connectMode">
-      <option value="qrcode">QR Code</option>
-      <option value="phone">Número (Phone Code)</option>
-    </select>
-    <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
-    <button onclick="connect()">Conectar</button>
-    <div id="qrContainer"></div>
-    <p id="connectStatus" class="status">⏳ Aguardando...</p>
-  </div>
+  <!-- Main Content -->
+  <main>
+    <!-- Dashboard -->
+    <section id="dashboard" class="tab active">
+      <h2>Estatísticas</h2>
+      <canvas id="chartMsgs"></canvas>
+    </section>
 
-  <!-- Card de envio -->
-  <div class="card">
-    <h2>Enviar Mensagem</h2>
-    <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
-    <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
-    <button onclick="sendMessage()">Enviar</button>
-    <p id="sendStatus" class="status">⏳ Aguardando...</p>
-  </div>
+    <!-- Conexão -->
+    <section id="conexao" class="tab">
+      <h2>Conectar WhatsApp</h2>
+      <select id="connectMode">
+        <option value="qrcode">QR Code</option>
+        <option value="phone">Número (Phone Code)</option>
+      </select>
+      <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
+      <button onclick="connect()">Conectar</button>
+      <div id="qrContainer"></div>
+      <p id="connectStatus" class="status">⏳ Aguardando...</p>
+    </section>
+
+    <!-- Envio de Mensagens -->
+    <section id="mensagem" class="tab">
+      <h2>Enviar Mensagem</h2>
+      <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
+      <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
+      <button onclick="sendMessage()">Enviar</button>
+      <p id="sendStatus" class="status">⏳ Aguardando...</p>
+    </section>
+
+    <!-- Contatos -->
+    <section id="contatos" class="tab">
+      <h2>Contatos</h2>
+      <input type="file" id="uploadCSV">
+      <div id="listaContatos"></div>
+    </section>
+  </main>
 
   <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Alternância de tema
-    const body = document.body;
-    const themeToggle = document.getElementById("toggleTheme");
-
-    function setTheme(theme) {
-      body.className = theme;
-      localStorage.setItem("theme", theme);
-      themeToggle.checked = theme === "white";
+    // Navegação entre abas
+    function showTab(id) {
+      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
     }
 
-    themeToggle.addEventListener("change", () => {
-      setTheme(themeToggle.checked ? "white" : "dark");
+    // Gráfico de mensagens (exemplo)
+    new Chart(document.getElementById('chartMsgs'), {
+      type: 'bar',
+      data: {
+        labels: ['Hoje', 'Semana', 'Mês'],
+        datasets: [{
+          label: 'Mensagens enviadas',
+          data: [5, 20, 100], // pode trocar depois por dados reais
+          backgroundColor: '#ff0000'
+        }]
+      }
     });
-
-    // Carregar tema salvo
-    const savedTheme = localStorage.getItem("theme") || "dark";
-    setTheme(savedTheme);
   </script>
 </body>
 </html>

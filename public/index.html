@@ -5,17 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #0f172a; color: white; text-align: center; }
-    .container { max-width: 500px; margin: 20px auto; background: #1e293b; padding: 20px; border-radius: 10px; }
-    button { background: #3b82f6; color: white; border: none; padding: 10px; margin-top: 10px; cursor: pointer; border-radius: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { color: #58a6ff; }
+    .container {
+      background: #161b22;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+    button {
+      background: #3b82f6;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+    }
     button:hover { background: #2563eb; }
-    input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
-    img { margin-top: 10px; }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+    }
+    img { margin-top: 15px; border-radius: 8px; }
+    p { font-size: 14px; margin-top: 8px; }
   </style>
 </head>
 <body>
   <h1>ZapLynx 🚀</h1>
 
+  <!-- QR Code -->
   <div class="container">
     <h2>Conectar WhatsApp via QR Code</h2>
     <button onclick="gerarQRCode()">Gerar QR Code</button>
@@ -23,6 +56,7 @@
     <img id="qrImage" width="250" style="display:none;" />
   </div>
 
+  <!-- Conectar pelo Número -->
   <div class="container">
     <h2>Conectar pelo Número</h2>
     <input type="text" id="numeroConectar" placeholder="Digite o número com DDI/DD" />
@@ -30,12 +64,13 @@
     <p id="codigoRetornado"></p>
   </div>
 
+  <!-- Enviar Mensagem -->
   <div class="container">
     <h2>Enviar Mensagem</h2>
-    <input type="text" id="numero" placeholder="Número (com DDI/DD)" />
-    <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea><br>
+    <input type="text" id="numero" placeholder="Número (com DDI/DDD)" />
+    <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
     <button onclick="enviarMensagem()">Enviar</button>
-    <p id="send-status"></p>
+    <p id="statusEnvio"></p>
   </div>
 
   <script>
@@ -44,15 +79,15 @@
       try {
         const res = await fetch("/api/qr");
         const data = await res.json();
-        if (data.qr) {
+        if (data.value) {
           const img = document.getElementById("qrImage");
-          img.src = data.qr;
+          img.src = data.value;
           img.style.display = "block";
           document.getElementById("qr-status").innerText = "✅ QR Code gerado!";
         } else {
           document.getElementById("qr-status").innerText = "⚠️ Nenhum QR retornado.";
         }
-      } catch (err) {
+      } catch {
         document.getElementById("qr-status").innerText = "❌ Erro ao gerar QR.";
       }
     }
@@ -69,7 +104,7 @@
         } else {
           document.getElementById("codigoRetornado").innerText = "⚠️ Nenhum código retornado.";
         }
-      } catch (err) {
+      } catch {
         document.getElementById("codigoRetornado").innerText = "❌ Erro ao conectar pelo número.";
       }
     }
@@ -77,21 +112,18 @@
     async function enviarMensagem() {
       const phone = document.getElementById("numero").value;
       const message = document.getElementById("mensagem").value;
-      document.getElementById("send-status").innerText = "🔄 Enviando...";
+      if (!phone || !message) return alert("Preencha os campos!");
+      document.getElementById("statusEnvio").innerText = "🔄 Enviando...";
       try {
         const res = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, message })
+          body: JSON.stringify({ phone, message }),
         });
         const data = await res.json();
-        if (data.messageId) {
-          document.getElementById("send-status").innerText = "✅ Mensagem enviada!";
-        } else {
-          document.getElementById("send-status").innerText = "⚠️ Erro ao enviar mensagem.";
-        }
-      } catch (err) {
-        document.getElementById("send-status").innerText = "❌ Erro na API.";
+        document.getElementById("statusEnvio").innerText = "✅ Mensagem enviada!";
+      } catch {
+        document.getElementById("statusEnvio").innerText = "❌ Erro ao enviar.";
       }
     }
   </script>

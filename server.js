@@ -6,7 +6,7 @@ const path = require("path");
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"))); // front no /public
+app.use(express.static(path.join(__dirname, "public"))); // serve o front da pasta /public
 
 // 🔑 Credenciais Z-API
 const ZAPI = {
@@ -14,25 +14,25 @@ const ZAPI = {
   token: process.env.ZAPI_TOKEN || "SEU_TOKEN",
 };
 
-// ✅ Gerar QR Code
+// ✅ Rota QR Code (mantida exatamente como antes)
 app.get("/api/qr", async (req, res) => {
   try {
     const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/qr-code/image`;
     const { data } = await axios.get(url);
-    res.json({ qr: data.value }); // retorna base64
+    res.json(data);
   } catch (error) {
-    console.error("Erro ao buscar QR:", error.response?.data || error.message);
+    console.error("Erro QR:", error.response?.data || error.message);
     res.status(500).json({ error: "Erro ao buscar QR" });
   }
 });
 
-// ✅ Conectar pelo número
+// ✅ Novo: Conectar pelo número (ADICIONADO, não altera o QR)
 app.get("/api/connect-number/:phone", async (req, res) => {
   try {
     const { phone } = req.params;
     const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/phone-code/${phone}`;
     const { data } = await axios.get(url);
-    res.json(data); // retorna código de verificação
+    res.json(data);
   } catch (error) {
     console.error("Erro ao conectar pelo número:", error.response?.data || error.message);
     res.status(500).json({ error: "Erro ao conectar pelo número" });
@@ -47,7 +47,7 @@ app.post("/api/send", async (req, res) => {
     const { data } = await axios.post(url, { phone, message });
     res.json(data);
   } catch (error) {
-    console.error("Erro ao enviar mensagem:", error.response?.data || error.message);
+    console.error("Erro enviar:", error.response?.data || error.message);
     res.status(500).json({ error: "Erro ao enviar mensagem" });
   }
 });

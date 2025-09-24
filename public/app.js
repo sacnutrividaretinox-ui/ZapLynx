@@ -1,3 +1,10 @@
+// Alternar blocos de conexão
+function alternarModo() {
+  const modo = document.getElementById("modoConexao").value;
+  document.getElementById("bloco-qr").style.display = (modo === "qr") ? "block" : "none";
+  document.getElementById("bloco-numero").style.display = (modo === "numero") ? "block" : "none";
+}
+
 // ============================
 // 📌 Função: Gerar QR Code
 // ============================
@@ -11,20 +18,17 @@ async function gerarQRCode() {
     const res = await fetch("/api/qr");
     const data = await res.json();
 
-    console.log("Resposta bruta /api/qr:", data);
-
     if (data?.value) {
       qrImg.src = data.value;
       qrImg.style.display = "block";
       statusEl.textContent = "✅ QR Code gerado com sucesso!";
     } else {
-      statusEl.textContent = "⚠️ Nenhum QR retornado. Veja os logs.";
+      statusEl.textContent = "⚠️ Nenhum QR retornado.";
       qrImg.style.display = "none";
     }
   } catch (err) {
     statusEl.textContent = "❌ Erro ao gerar QR Code.";
-    qrImg.style.display = "none";
-    console.error("Erro:", err);
+    console.error(err);
   }
 }
 
@@ -41,17 +45,15 @@ async function conectarNumero() {
     const res = await fetch(`/api/connect-number/${phone}`);
     const data = await res.json();
 
-    console.log("Resposta bruta /api/connect-number:", data);
-
     if (data?.value) {
-      statusEl.textContent = "✅ Pairing Code gerado: " + data.value;
-      alert("Digite esse código no WhatsApp do número informado: " + data.value);
+      statusEl.textContent = "✅ Pairing Code: " + data.value;
+      alert("Digite esse código no WhatsApp: " + data.value);
     } else {
       statusEl.textContent = "⚠️ Nenhum código retornado.";
     }
   } catch (err) {
     statusEl.textContent = "❌ Erro ao conectar pelo número.";
-    console.error("Erro:", err);
+    console.error(err);
   }
 }
 
@@ -73,7 +75,6 @@ async function enviarMensagem() {
     });
 
     const data = await res.json();
-    console.log("Resposta bruta /api/send-message:", data);
 
     if (data?.status === "success") {
       statusEl.textContent = "✅ Mensagem enviada!";
@@ -82,6 +83,6 @@ async function enviarMensagem() {
     }
   } catch (err) {
     statusEl.textContent = "❌ Erro ao enviar mensagem.";
-    console.error("Erro:", err);
+    console.error(err);
   }
 }

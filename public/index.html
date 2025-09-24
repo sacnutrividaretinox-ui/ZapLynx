@@ -1,131 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZapLynx 🚀</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0d1117;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 { color: #58a6ff; }
-    .container {
-      background: #161b22;
-      padding: 20px;
-      margin: 20px auto;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 500px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.5);
-    }
-    button {
-      background: #3b82f6;
-      border: none;
-      padding: 10px 20px;
-      margin-top: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      color: white;
-      font-weight: bold;
-    }
-    button:hover { background: #2563eb; }
-    input {
-      width: 90%;
-      padding: 10px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 6px;
-    }
-    img { margin-top: 15px; border-radius: 8px; }
-    p { font-size: 14px; margin-top: 8px; }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>ZapLynx 🚀</h1>
-
-  <!-- QR Code -->
   <div class="container">
-    <h2>Conectar WhatsApp via QR Code</h2>
-    <button onclick="gerarQRCode()">Gerar QR Code</button>
-    <p id="qr-status"></p>
-    <img id="qrImage" width="250" style="display:none;" />
+    <h1>ZapLynx 🚀</h1>
+
+    <!-- Bloco de Conexão -->
+    <div class="card">
+      <h2>Conectar WhatsApp</h2>
+
+      <label for="modoConexao">Escolha o modo:</label>
+      <select id="modoConexao" onchange="alternarModo()">
+        <option value="qr">QR Code</option>
+        <option value="numero">Número (Pairing Code)</option>
+      </select>
+
+      <!-- QR Code -->
+      <div id="bloco-qr">
+        <button onclick="gerarQRCode()">Gerar QR Code</button>
+        <p id="status-qr">⚠️ Aguardando ação...</p>
+        <img id="qrCode" style="display:none; width:250px; margin-top:10px;" />
+      </div>
+
+      <!-- Pairing Code -->
+      <div id="bloco-numero" style="display:none;">
+        <input id="numero" type="text" placeholder="Digite número com DDI/DDD" />
+        <button onclick="conectarNumero()">Conectar</button>
+        <p id="status-numero">⚠️ Aguardando ação...</p>
+      </div>
+    </div>
+
+    <!-- Enviar Mensagem -->
+    <div class="card">
+      <h2>Enviar Mensagem</h2>
+      <input id="telefone" type="text" placeholder="Número (com DDI/DDD)" />
+      <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
+      <button onclick="enviarMensagem()">Enviar</button>
+      <p id="status-msg">⚠️ Aguardando envio...</p>
+    </div>
   </div>
 
-  <!-- Conectar pelo Número -->
-  <div class="container">
-    <h2>Conectar pelo Número</h2>
-    <input type="text" id="numeroConectar" placeholder="Digite o número com DDI/DD" />
-    <button onclick="conectarNumero()">Conectar</button>
-    <p id="codigoRetornado"></p>
-  </div>
-
-  <!-- Enviar Mensagem -->
-  <div class="container">
-    <h2>Enviar Mensagem</h2>
-    <input type="text" id="numero" placeholder="Número (com DDI/DDD)" />
-    <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
-    <button onclick="enviarMensagem()">Enviar</button>
-    <p id="statusEnvio"></p>
-  </div>
-
-  <script>
-    async function gerarQRCode() {
-      document.getElementById("qr-status").innerText = "🔄 Gerando QR...";
-      try {
-        const res = await fetch("/api/qr");
-        const data = await res.json();
-        if (data.value) {
-          const img = document.getElementById("qrImage");
-          img.src = data.value;
-          img.style.display = "block";
-          document.getElementById("qr-status").innerText = "✅ QR Code gerado!";
-        } else {
-          document.getElementById("qr-status").innerText = "⚠️ Nenhum QR retornado.";
-        }
-      } catch {
-        document.getElementById("qr-status").innerText = "❌ Erro ao gerar QR.";
-      }
-    }
-
-    async function conectarNumero() {
-      const numero = document.getElementById("numeroConectar").value;
-      if (!numero) return alert("Digite um número!");
-      document.getElementById("codigoRetornado").innerText = "🔄 Conectando...";
-      try {
-        const res = await fetch(`/api/connect-number/${numero}`);
-        const data = await res.json();
-        if (data.code) {
-          document.getElementById("codigoRetornado").innerText = `📲 Código recebido: ${data.code}`;
-        } else {
-          document.getElementById("codigoRetornado").innerText = "⚠️ Nenhum código retornado.";
-        }
-      } catch {
-        document.getElementById("codigoRetornado").innerText = "❌ Erro ao conectar pelo número.";
-      }
-    }
-
-    async function enviarMensagem() {
-      const phone = document.getElementById("numero").value;
-      const message = document.getElementById("mensagem").value;
-      if (!phone || !message) return alert("Preencha os campos!");
-      document.getElementById("statusEnvio").innerText = "🔄 Enviando...";
-      try {
-        const res = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, message }),
-        });
-        const data = await res.json();
-        document.getElementById("statusEnvio").innerText = "✅ Mensagem enviada!";
-      } catch {
-        document.getElementById("statusEnvio").innerText = "❌ Erro ao enviar.";
-      }
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

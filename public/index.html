@@ -21,12 +21,10 @@
       <nav>
         <a href="#inicio" class="nav-link">🏠 Início</a>
         <a href="#dashboard" class="nav-link">📊 Dashboard</a>
-        <a href="#meus-numeros" class="nav-link">📱 Meus Números</a>
         <a href="#extrair-contatos" class="nav-link">👥 Extrair Contatos</a>
         <a href="#perfil" class="nav-link">👤 Perfil</a>
         <a href="#historico" class="nav-link">⏱ Histórico</a>
         <a href="#templates" class="nav-link">📄 Templates</a>
-        <a href="#conectar" class="nav-link">🔗 Conectar Número</a>
       </nav>
     </aside>
 
@@ -38,67 +36,34 @@
       <!-- INÍCIO -->
       <section id="inicio" class="card">
         <h2>Início</h2>
-        <p>Bem-vindo ao seu Micro-SaaS de WhatsApp 🚀</p>
+        <p>🎥 Aqui você encontrará vídeos tutoriais e materiais de ajuda para usar a plataforma.</p>
       </section>
 
       <!-- DASHBOARD -->
       <section id="dashboard" class="card" hidden>
         <h2>Dashboard</h2>
-        <p>Aqui você verá estatísticas e métricas principais.</p>
-      </section>
-
-      <!-- MEUS NÚMEROS -->
-      <section id="meus-numeros" class="card" hidden>
-        <h2>Meus Números</h2>
-        <p>Gerencie os números conectados à sua conta.</p>
+        <p>📊 Gráficos de mensagens disparadas:</p>
+        <ul>
+          <li>Hoje</li>
+          <li>Ontem</li>
+          <li>Últimos 7 dias</li>
+          <li>Últimos 30 dias</li>
+          <li>Último ano</li>
+        </ul>
+        <canvas id="msgChart" width="400" height="200"></canvas>
       </section>
 
       <!-- EXTRAIR CONTATOS -->
       <section id="extrair-contatos" class="card" hidden>
         <h2>Extrair Contatos</h2>
-        <p>Ferramenta para capturar e importar contatos.</p>
+        <p>📥 Ferramenta para extrair contatos de comunidades/grupos.</p>
+        <button class="btn">Iniciar extração</button>
       </section>
 
       <!-- PERFIL -->
       <section id="perfil" class="card" hidden>
-        <h2>Perfil</h2>
-        <p>Gerencie suas informações pessoais e de login.</p>
-      </section>
-
-      <!-- HISTÓRICO -->
-      <section id="historico" class="card" hidden>
-        <h2>Histórico</h2>
-        <div id="history" class="history"></div>
-        <pre id="serverResponse" class="terminal"></pre>
-        <div class="row">
-          <button id="clearHistory" class="btn btn-ghost">Limpar histórico</button>
-          <button id="exportHistory" class="btn">Exportar JSON</button>
-        </div>
-      </section>
-
-      <!-- TEMPLATES -->
-      <section id="templates" class="card" hidden>
-        <h2>Templates</h2>
-        <div class="grid-2">
-          <div>
-            <label for="tplName">Nome</label>
-            <input id="tplName" placeholder="Ex: Boas-vindas" />
-          </div>
-          <div class="row end">
-            <button id="saveTpl" class="btn">Salvar Template</button>
-          </div>
-        </div>
-        <label for="tplSelect">Carregar</label>
-        <div class="row">
-          <select id="tplSelect"></select>
-          <button id="deleteTpl" class="btn btn-danger">Excluir</button>
-          <button id="applyTpl" class="btn">Aplicar</button>
-        </div>
-      </section>
-
-      <!-- CONECTAR NÚMERO -->
-      <section id="conectar" class="card" hidden>
-        <h2>Conectar Número</h2>
+        <h2>Perfil / Conectar Número</h2>
+        <p>🔗 Conecte seu número do WhatsApp aqui:</p>
         <div class="row">
           <button id="generateQrBtn" class="btn">
             <span class="spinner" id="qrSpin" hidden></span>
@@ -110,8 +75,40 @@
           <img id="qrImage" alt="QR Code" hidden />
         </div>
       </section>
+
+      <!-- HISTÓRICO -->
+      <section id="historico" class="card" hidden>
+        <h2>Histórico</h2>
+        <p>📜 Logs das mensagens disparadas, organizadas por campanhas.</p>
+        <div id="history" class="history"></div>
+        <pre id="serverResponse" class="terminal"></pre>
+      </section>
+
+      <!-- TEMPLATES -->
+      <section id="templates" class="card" hidden>
+        <h2>Modelos de Mensagem Salva</h2>
+        <p>💾 Crie e salve modelos de mensagens para usar em disparos futuros.</p>
+        <div class="grid-2">
+          <div>
+            <label for="tplName">Nome do Modelo</label>
+            <input id="tplName" placeholder="Ex: Boas-vindas" />
+          </div>
+          <div class="row end">
+            <button id="saveTpl" class="btn">Salvar</button>
+          </div>
+        </div>
+        <label for="tplSelect">Carregar Modelo</label>
+        <div class="row">
+          <select id="tplSelect"></select>
+          <button id="deleteTpl" class="btn btn-danger">Excluir</button>
+          <button id="applyTpl" class="btn">Aplicar</button>
+        </div>
+      </section>
     </main>
   </div>
+
+  <!-- Botão flutuante de suporte -->
+  <button id="supportBtn" class="support-btn">💬</button>
 
   <!-- Rodapé -->
   <footer class="foot">
@@ -121,10 +118,11 @@
   <!-- Scripts -->
   <script src="app.js"></script>
   <script>
-    // ===== Sidebar + overlay responsivo =====
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const toggle = document.getElementById("menuToggle");
+    const links = document.querySelectorAll("#sidebar .nav-link");
+    const sections = document.querySelectorAll("main section");
 
     toggle?.addEventListener("click", () => {
       sidebar.classList.toggle("open");
@@ -136,57 +134,33 @@
       overlay.style.display = "none";
     });
 
-    // ===== Navegação de abas com hash routing =====
-    const links = document.querySelectorAll("#sidebar .nav-link");
-    const sections = document.querySelectorAll("main section");
-
+    // Navegação de abas com hash
     function showSection(id) {
-      // esconder todas
-      sections.forEach(sec => {
-        sec.classList.remove("active");
-        sec.hidden = true;
-      });
-      // desmarcar links
-      links.forEach(l => {
-        l.classList.remove("active");
-        l.removeAttribute("aria-current");
-      });
+      sections.forEach(sec => { sec.classList.remove("active"); sec.hidden = true; });
+      links.forEach(l => l.classList.remove("active"));
 
-      // mostrar alvo
       const target = document.getElementById(id);
       if (target) {
         target.hidden = false;
-        void target.offsetWidth; // reflow p/ animar
+        void target.offsetWidth;
         target.classList.add("active");
       }
-
-      // marcar link ativo
       const activeLink = document.querySelector(`#sidebar .nav-link[href="#${id}"]`);
-      if (activeLink) {
-        activeLink.classList.add("active");
-        activeLink.setAttribute("aria-current", "page");
-      }
+      if (activeLink) activeLink.classList.add("active");
     }
 
-    // Clique: atualiza hash (mantém URL navegável)
-    links.forEach(link => {
-      link.addEventListener("click", e => {
-        // deixa o hash mudar (sem preventDefault) para funcionar com voltar/avançar
-        // mas fecha o menu no mobile
-        sidebar.classList.remove("open");
-        overlay.style.display = "none";
-      });
-    });
-
-    // Hashchange (voltar/avançar do navegador)
     window.addEventListener("hashchange", () => {
       const id = (location.hash || "#inicio").slice(1);
       showSection(id);
     });
 
-    // Inicialização
     const startId = (location.hash || "#inicio").slice(1);
     showSection(startId);
+
+    // Botão de suporte
+    document.getElementById("supportBtn").addEventListener("click", () => {
+      window.open("https://wa.me/5500000000000", "_blank"); // substitua pelo número real
+    });
   </script>
 </body>
 </html>

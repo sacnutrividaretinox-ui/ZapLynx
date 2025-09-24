@@ -1,88 +1,42 @@
-// Alternar blocos de conexão
-function alternarModo() {
-  const modo = document.getElementById("modoConexao").value;
-  document.getElementById("bloco-qr").style.display = (modo === "qr") ? "block" : "none";
-  document.getElementById("bloco-numero").style.display = (modo === "numero") ? "block" : "none";
-}
-
-// ============================
-// 📌 Função: Gerar QR Code
-// ============================
+// Gerar QR Code
 async function gerarQRCode() {
-  const qrImg = document.getElementById("qrCode");
-  const statusEl = document.getElementById("status-qr");
+  const res = await fetch("/api/qrcode");
+  const data = await res.json();
 
-  statusEl.textContent = "⏳ Gerando QR Code...";
-
-  try {
-    const res = await fetch("/api/qr");
-    const data = await res.json();
-
-    if (data?.value) {
-      qrImg.src = data.value;
-      qrImg.style.display = "block";
-      statusEl.textContent = "✅ QR Code gerado com sucesso!";
-    } else {
-      statusEl.textContent = "⚠️ Nenhum QR retornado.";
-      qrImg.style.display = "none";
-    }
-  } catch (err) {
-    statusEl.textContent = "❌ Erro ao gerar QR Code.";
-    console.error(err);
+  if (data?.value) {
+    document.getElementById("qrcodeImg").src = data.value;
+    document.getElementById("status").innerText = "✅ QR Code gerado!";
+  } else {
+    document.getElementById("status").innerText = "⚠️ Nenhum QR retornado.";
   }
 }
 
-// ============================
-// 📌 Função: Conectar pelo Número (Pairing Code)
-// ============================
+// Conectar pelo Número (Pairing Code)
 async function conectarNumero() {
-  const phone = document.getElementById("numero").value;
-  const statusEl = document.getElementById("status-numero");
+  const phone = document.getElementById("phoneInput").value;
+  const res = await fetch(`/api/connect-number/${phone}`);
+  const data = await res.json();
 
-  statusEl.textContent = "⏳ Solicitando Pairing Code...";
-
-  try {
-    const res = await fetch(`/api/connect-number/${phone}`);
-    const data = await res.json();
-
-    if (data?.value) {
-      statusEl.textContent = "✅ Pairing Code: " + data.value;
-      alert("Digite esse código no WhatsApp: " + data.value);
-    } else {
-      statusEl.textContent = "⚠️ Nenhum código retornado.";
-    }
-  } catch (err) {
-    statusEl.textContent = "❌ Erro ao conectar pelo número.";
-    console.error(err);
+  if (data?.pairingCode) {
+    document.getElementById("statusNumero").innerText =
+      `📲 Digite este código no WhatsApp: ${data.pairingCode}`;
+  } else {
+    document.getElementById("statusNumero").innerText = "⚠️ Nenhum código retornado.";
   }
 }
 
-// ============================
-// 📌 Função: Enviar Mensagem
-// ============================
+// Enviar mensagem
 async function enviarMensagem() {
-  const phone = document.getElementById("telefone").value;
-  const message = document.getElementById("mensagem").value;
-  const statusEl = document.getElementById("status-msg");
+  const phone = document.getElementById("msgPhone").value;
+  const message = document.getElementById("msgText").value;
 
-  statusEl.textContent = "⏳ Enviando mensagem...";
+  const res = await fetch("/api/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, message })
+  });
 
-  try {
-    const res = await fetch("/api/send-message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, message })
-    });
-
-    const data = await res.json();
-
-    if (data?.status === "success") {
-      statusEl.textContent = "✅ Mensagem enviada!";
-    } else {
-      statusEl.textContent = "⚠️ Erro ao enviar mensagem.";
-    }
-  } catch (err) {
-    statusEl.textContent = "❌ Erro ao enviar mensagem.";
-    console.error(err);
-  }
+  const data = await res.json();
+  document.getElementById("statusMsg").innerText =
+    data?.id ? "✅ Mensagem enviada!" : "⚠️ Erro ao enviar.";
 }

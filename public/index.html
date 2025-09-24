@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZapLynx 🚀</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>ZapLynx</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>ZapLynx 🚀</h1>
+  <h1>🚀 ZapLynx</h1>
 
-    <!-- Bloco de Conexão -->
-    <div class="card">
-      <h2>Conectar WhatsApp</h2>
+  <div class="card">
+    <h2>Conectar WhatsApp</h2>
+    <select id="modoConexao" onchange="alternarModo()">
+      <option value="qr">QR Code</option>
+      <option value="numero">Número (Pairing Code)</option>
+    </select>
 
-      <label for="modoConexao">Escolha o modo:</label>
-      <select id="modoConexao" onchange="alternarModo()">
-        <option value="qr">QR Code</option>
-        <option value="numero">Número (Pairing Code)</option>
-      </select>
-
-      <!-- QR Code -->
-      <div id="bloco-qr">
-        <button onclick="gerarQRCode()">Gerar QR Code</button>
-        <p id="status-qr">⚠️ Aguardando ação...</p>
-        <img id="qrCode" style="display:none; width:250px; margin-top:10px;" />
-      </div>
-
-      <!-- Pairing Code -->
-      <div id="bloco-numero" style="display:none;">
-        <input id="numero" type="text" placeholder="Digite número com DDI/DDD" />
-        <button onclick="conectarNumero()">Conectar</button>
-        <p id="status-numero">⚠️ Aguardando ação...</p>
-      </div>
+    <div id="qrSection">
+      <button onclick="gerarQRCode()">Gerar QR Code</button>
+      <p id="status">Aguardando ação...</p>
+      <img id="qrcodeImg" width="250">
     </div>
 
-    <!-- Enviar Mensagem -->
-    <div class="card">
-      <h2>Enviar Mensagem</h2>
-      <input id="telefone" type="text" placeholder="Número (com DDI/DDD)" />
-      <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
-      <button onclick="enviarMensagem()">Enviar</button>
-      <p id="status-msg">⚠️ Aguardando envio...</p>
+    <div id="numeroSection" style="display:none;">
+      <input id="phoneInput" placeholder="Número com DDI/DDD">
+      <button onclick="conectarNumero()">Conectar</button>
+      <p id="statusNumero">Aguardando ação...</p>
     </div>
   </div>
 
+  <div class="card">
+    <h2>Enviar Mensagem</h2>
+    <input id="msgPhone" placeholder="Número com DDI/DDD">
+    <textarea id="msgText" placeholder="Digite sua mensagem"></textarea>
+    <button onclick="enviarMensagem()">Enviar</button>
+    <p id="statusMsg">Aguardando envio...</p>
+  </div>
+
   <script src="app.js"></script>
+  <script>
+    function alternarModo() {
+      const modo = document.getElementById("modoConexao").value;
+      document.getElementById("qrSection").style.display =
+        modo === "qr" ? "block" : "none";
+      document.getElementById("numeroSection").style.display =
+        modo === "numero" ? "block" : "none";
+    }
+  </script>
 </body>
 </html>

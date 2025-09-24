@@ -1,101 +1,111 @@
-// ============================
-// 📌 Dependências
-// ============================
 const express = require("express");
 const cors = require("cors");
-const axios = require("axios");
 const path = require("path");
+const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// ============================
-// 🔑 Credenciais da Z-API (Railway → Variables)
-// ============================
-const ZAPI = {
-  instanceId: process.env.ZAPI_INSTANCE_ID || "SEU_INSTANCE_ID",
-  token: process.env.ZAPI_TOKEN || "SEU_TOKEN",
-  clientToken: process.env.ZAPI_CLIENT_TOKEN || "SEU_CLIENT_TOKEN",
-  baseUrl() {
-    return `https://api.z-api.io/instances/${this.instanceId}/token/${this.token}`;
-  }
-};
-
-// ============================
-// 🚀 Servir Front-End
-// ============================
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// ===== Banco de Dados (SQLite) =====
+const db = new sqlite3.Database(path.join(__dirname, "data.db"));
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      campanha TEXT,
+      mensagem TEXT,
+      status TEXT,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 });
 
-// ============================
-// ✅ Rotas da API
-// ============================
+// ===== Endpoint: enviar mensagem (exemplo mock) =====
+app.post("/send", (req, res) => {
+  const { message, campanha } = req.body;
 
-// Status
-app.get("/api/status", (req, res) => {
-  res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
-});
+  // 👉 Aqui você colocaria a integração com Z-API
+  // await axios.post(...)
 
-// QR Code
-app.get("/api/qr", async (req, res) => {
-  try {
-    const response = await axios.get(`${ZAPI.baseUrl()}/qr-code/image`, {
-      headers: { "Client-Token": ZAPI.clientToken },
-      timeout: 10000
-    });
-
-    // Debug no log do servidor
-    console.log("Resposta Z-API QR:", response.data);
-
-    // Captura o base64 (cobre diferentes formatos possíveis)
-    const base64 = response.data?.value || response.data?.qrCode;
-
-    if (base64) {
-      res.json({ qrCode: base64 });
-    } else {
-      res.status(500).json({
-        error: "QR Code não retornado pela Z-API",
-        raw: response.data
-      });
+  db.run(
+    "INSERT INTO logs (campanha, mensagem, status) VALUES (?, ?, ?)",
+    [campanha || "sem-campanha", message, "enviado"],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Erro ao salvar log" });
+      res.json({ ok: true });
     }
-  } catch (err) {
-    console.error("❌ Erro na rota /api/qr:", err.response?.data || err.message);
-    res.status(500).json({
-      error: "Erro ao gerar QR Code",
-      details: err.response?.data || err.message
-    });
-  }
+  );
 });
 
-// Enviar mensagem
-app.post("/api/send-message", async (req, res) => {
-  try {
-    const { phone, message } = req.body;
+// ===== Endpoint: Dashboard =====
+app.get("/api/dashboard", (req, res) => {
+  const stats = { hoje: 0, ontem: 0, seteDias: 0, trintaDias: 0, umAno: 0 };
 
-    const response = await axios.post(
-      `${ZAPI.baseUrl()}/send-text`,
-      { phone, message },
-      { headers: { "Client-Token": ZAPI.clientToken } }
+  db.serialize(() => {
+    db.get(
+      `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em) = DATE('now')`,
+      (err, row) => (stats.hoje = row.total)
     );
+    db.get(
+      `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em) = DATE('now', '-1 day')`,
+      (err, row) => (stats.ontem = row.total)
+    );
+    db.get(
+      `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em) >= DATE('now', '-7 day')`,
+      (err, row) => (stats.seteDias = row.total)
+    );
+    db.get(
+      `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em) >= DATE('now', '-30 day')`,
+      (err, row) => (stats.trintaDias = row.total)
+    );
+    db.get(
+      `SELECT COUNT(*) as total FROM logs WHERE DATE(criado_em) >= DATE('now', '-1 year')`,
+      (err, row) => {
+        stats.umAno = row.total;
+        res.json(stats);
+      }
+    );
+  });
+});
 
-    res.json(response.data);
-  } catch (err) {
-    console.error("❌ Erro na rota /api/send-message:", err.response?.data || err.message);
-    res.status(500).json({
-      error: err.message,
-      details: err.response?.data || null
+// ===== Endpoint: campanhas =====
+app.get("/api/campanhas", (req, res) => {
+  db.all("SELECT DISTINCT campanha FROM logs ORDER BY campanha", (err, rows) => {
+    if (err) return res.status(500).json({ error: "Erro ao carregar campanhas" });
+    res.json(rows.map(r => r.campanha));
+  });
+});
+
+// ===== Endpoint: histórico agrupado =====
+app.get("/api/historico", (req, res) => {
+  db.all("SELECT * FROM logs ORDER BY campanha, criado_em DESC", (err, rows) => {
+    if (err) return res.status(500).json({ error: "Erro ao carregar logs" });
+
+    const grouped = {};
+    rows.forEach(log => {
+      if (!grouped[log.campanha]) grouped[log.campanha] = [];
+      grouped[log.campanha].push(log);
     });
-  }
+
+    res.json(grouped);
+  });
 });
 
-// ============================
-// 🚀 Inicializar servidor
-// ============================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+// ===== Endpoint: gráfico por campanha =====
+app.get("/api/historico/:campanha", (req, res) => {
+  const campanha = req.params.campanha;
+  db.all(
+    "SELECT status, COUNT(*) as total FROM logs WHERE campanha = ? GROUP BY status",
+    [campanha],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: "Erro ao carregar dados" });
+      res.json(rows);
+    }
+  );
 });
+
+// ===== Inicialização =====
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));

@@ -1,20 +1,20 @@
-# Usar Node 18 como base
-FROM node:18-alpine
+# Usa Node.js LTS (estável)
+FROM node:20
 
-# Criar diretório de trabalho
+# Define diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de configuração primeiro
+# Copia package.json e package-lock.json
 COPY package*.json ./
 
-# Instalar dependências
-RUN npm install --production
+# Instala dependências
+RUN npm install --omit=dev
 
-# Copiar o restante do código
+# Copia o restante dos arquivos
 COPY . .
 
-# Expor a porta usada pelo Railway
-EXPOSE 3000
+# Expoe a porta usada no server.js
+EXPOSE 8080
 
-# Comando para rodar a aplicação
-CMD ["npm", "start"]
+# Comando padrão para rodar
+CMD ["node", "server.js"]

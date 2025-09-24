@@ -2,61 +2,40 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZapLynx 🚀</title>
+  <title>ZapLynx 🚀🚀</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>ZapLynx 🚀</h1>
+  <h1>ZapLynx 🚀🚀</h1>
 
-    <!-- Conectar WhatsApp -->
-    <div class="card">
-      <h2>Conectar WhatsApp</h2>
-      <select id="connectMode" onchange="toggleConnectMode()">
-        <option value="qr">Via QR Code</option>
-        <option value="phone">Via Número</option>
-      </select>
-      <div id="qrSection">
-        <button onclick="getQRCode()">Gerar QR Code</button>
-        <div id="qrcode"></div>
-      </div>
-      <div id="phoneSection" style="display:none;">
-        <input type="text" id="phoneConnect" placeholder="Número com DDI/DDD">
-        <button onclick="getPhoneCode()">Gerar Código</button>
-        <div id="phoneCodeResult"></div>
-      </div>
-    </div>
+  <div class="card">
+    <h2>Conectar WhatsApp</h2>
+    <select id="connectType">
+      <option value="qrcode">Via QR Code</option>
+    </select>
+    <button onclick="getQRCode()">Gerar QR Code</button>
+    <div id="qrcode" class="box"></div>
+  </div>
 
-    <!-- Enviar mensagem -->
-    <div class="card">
-      <h2>Enviar Mensagem</h2>
-      <input type="text" id="phone" placeholder="Número com DDI/DDD">
-      <textarea id="message" placeholder="Digite sua mensagem"></textarea>
-      <button onclick="sendMessage()">Enviar</button>
-      <div id="sendStatus"></div>
-    </div>
+  <div class="card">
+    <h2>Enviar Mensagem</h2>
+    <input type="text" id="phone" placeholder="Número com DDI/DDD">
+    <textarea id="message" placeholder="Digite sua mensagem"></textarea>
+    <button onclick="sendMessage()">Enviar</button>
+    <div id="sendResult" class="box"></div>
   </div>
 
   <script>
-    function toggleConnectMode() {
-      const mode = document.getElementById("connectMode").value;
-      document.getElementById("qrSection").style.display = mode === "qr" ? "block" : "none";
-      document.getElementById("phoneSection").style.display = mode === "phone" ? "block" : "none";
-    }
-
     async function getQRCode() {
       const res = await fetch("/api/qrcode");
       const data = await res.json();
-      document.getElementById("qrcode").innerText = JSON.stringify(data, null, 2);
-    }
+      const box = document.getElementById("qrcode");
 
-    async function getPhoneCode() {
-      const phone = document.getElementById("phoneConnect").value.trim();
-      if (!phone) return alert("Digite um número válido!");
-      const res = await fetch(`/api/phone-code/${phone}`);
-      const data = await res.json();
-      document.getElementById("phoneCodeResult").innerText = JSON.stringify(data, null, 2);
+      if (data.qrCode) {
+        box.innerHTML = `<img src="${data.qrCode}" alt="QR Code" style="width:250px">`;
+      } else {
+        box.innerText = JSON.stringify(data, null, 2);
+      }
     }
 
     async function sendMessage() {
@@ -70,7 +49,7 @@
       });
 
       const data = await res.json();
-      document.getElementById("sendStatus").innerText = JSON.stringify(data, null, 2);
+      document.getElementById("sendResult").innerText = JSON.stringify(data, null, 2);
     }
   </script>
 </body>

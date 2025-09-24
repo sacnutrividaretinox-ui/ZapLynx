@@ -5,42 +5,100 @@
   <title>Conexão</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    body { background:#111; color:white; font-family: Arial, sans-serif; }
-    .container { max-width: 900px; margin: 20px auto; padding: 20px; }
-    .card { background:#1c1c1c; padding:20px; margin-bottom:20px; border-radius:10px; }
-    .btn { display:block; width:100%; padding:12px; border:none; border-radius:6px; cursor:pointer; font-size:16px; }
-    .btn-red { background:red; color:white; font-weight:bold; }
-    .qr-box { margin-top:15px; text-align:center; }
-    .qr-box img { max-width:280px; margin-top:10px; border:3px solid white; border-radius:6px; }
-    .status { margin-top:10px; font-weight:bold; }
-    .status.ok { color:lime; }
-    .status.error { color:red; }
+    .main-container {
+      margin-left: 220px; /* espaço da sidebar */
+      padding: 30px;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    .card {
+      background: #1c1c1c;
+      padding: 25px;
+      margin-bottom: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    }
+    .card h3 {
+      margin-bottom: 15px;
+      color: #ff4d4d;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .btn-red {
+      background: #ff1a1a;
+      color: #fff;
+    }
+    .btn-red:hover {
+      background: #cc0000;
+    }
+    .qr-box {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .qr-box img {
+      max-width: 250px;
+      margin-top: 15px;
+      border: 3px solid #fff;
+      border-radius: 8px;
+    }
+    .status {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    .status.ok { color: lime; }
+    .status.error { color: #ff3333; }
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="logo.png" alt="ZapLynx" style="max-width:120px;">
+    </div>
+    <ul>
+      <li><a href="inicio.html">🏠 Início</a></li>
+      <li class="active"><a href="conexao.html">🔗 Conexão</a></li>
+      <li><a href="mensagens.html">💬 Mensagens</a></li>
+      <li><a href="contatos.html">👥 Contatos</a></li>
+      <li><a href="estatisticas.html">📊 Estatísticas</a></li>
+      <li><a href="configuracoes.html">⚙️ Configurações</a></li>
+    </ul>
+  </div>
+
+  <!-- Conteúdo -->
+  <div class="main-container">
     <h2>Conexão</h2>
 
-    <!-- QR CODE -->
+    <!-- QR Code -->
     <div class="card">
-      <h3>🔗 Conectar via QR Code</h3>
+      <h3>📲 Conectar via QR Code</h3>
       <button class="btn btn-red" onclick="gerarQR()">Gerar QR Code</button>
       <div class="qr-box" id="qrBox">
         <p class="status error">❌ Não conectado</p>
       </div>
     </div>
 
-    <!-- Conexão por número -->
+    <!-- Número -->
     <div class="card">
       <h3>📞 Conectar com número</h3>
-      <input type="text" id="numero" placeholder="Ex: 559491234567" style="width:100%;padding:10px;margin-top:10px;">
-      <button class="btn btn-red" style="margin-top:10px;" onclick="conectarNumero()">Conectar Número</button>
+      <input type="text" id="numero" placeholder="Ex: 559491234567" style="width:100%;padding:10px;margin-top:10px;border-radius:6px;border:none;">
+      <button class="btn btn-red" onclick="conectarNumero()">Conectar Número</button>
       <div id="statusNumero" class="status">⌛ Aguardando...</div>
     </div>
   </div>
 
   <script>
-    // Gerar QR Code
     async function gerarQR() {
       const qrBox = document.getElementById("qrBox");
       qrBox.innerHTML = "⌛ Gerando QR Code...";
@@ -53,7 +111,6 @@
           qrBox.innerHTML = `<img src="${data.qrCode}" alt="QR Code">`;
         } else {
           qrBox.innerHTML = `<p class="status error">❌ Nenhum QR retornado</p>`;
-          console.error("Resposta completa:", data);
         }
       } catch (err) {
         qrBox.innerHTML = `<p class="status error">❌ Erro ao gerar QR Code</p>`;
@@ -61,7 +118,6 @@
       }
     }
 
-    // Conectar com número
     async function conectarNumero() {
       const numero = document.getElementById("numero").value;
       const statusDiv = document.getElementById("statusNumero");
@@ -77,9 +133,7 @@
         const res = await fetch("/api/status");
         const data = await res.json();
 
-        console.log("Status recebido:", data);
-
-        if (data.connected || data.status === "CONNECTED" || data.message === "Connected") {
+        if (data.connected || data.status === "CONNECTED") {
           statusDiv.innerHTML = `✅ Conectado: ${numero}`;
           statusDiv.className = "status ok";
         } else {
@@ -89,7 +143,6 @@
       } catch (err) {
         statusDiv.innerHTML = "❌ Erro ao verificar conexão";
         statusDiv.className = "status error";
-        console.error(err);
       }
     }
   </script>

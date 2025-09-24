@@ -74,28 +74,15 @@
       document.getElementById(id).classList.add("active");
     }
 
-    // Evento do botão Gerar QR Code
+    // Botão de QR Code → usa src direto
     document.addEventListener("DOMContentLoaded", () => {
       const btn = document.getElementById("btnGerarQr");
       const img = document.getElementById("qrImage");
 
       if (btn) {
-        btn.addEventListener("click", async () => {
-          img.src = "";
-          img.alt = "Gerando QR Code...";
-
-          try {
-            const response = await fetch("/api/qr");
-            if (!response.ok) throw new Error("Falha ao buscar QR");
-
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            img.src = url;
-            img.alt = "QR Code pronto para escanear";
-          } catch (err) {
-            console.error("Erro ao carregar QR:", err);
-            img.alt = "Erro ao gerar QR Code";
-          }
+        btn.addEventListener("click", () => {
+          img.src = "/api/qr?" + new Date().getTime(); 
+          img.alt = "QR Code pronto para escanear";
         });
       }
     });

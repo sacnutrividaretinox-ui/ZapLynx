@@ -2,73 +2,96 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>ZapLynx - Conexão</title>
+  <title>Conexão</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background:#111; color:white; font-family: Arial, sans-serif; }
+    .container { max-width: 900px; margin: 20px auto; padding: 20px; }
+    .card { background:#1c1c1c; padding:20px; margin-bottom:20px; border-radius:10px; }
+    .btn { display:block; width:100%; padding:12px; border:none; border-radius:6px; cursor:pointer; font-size:16px; }
+    .btn-red { background:red; color:white; font-weight:bold; }
+    .qr-box { margin-top:15px; text-align:center; }
+    .qr-box img { max-width:280px; margin-top:10px; border:3px solid white; border-radius:6px; }
+    .status { margin-top:10px; font-weight:bold; }
+    .status.ok { color:lime; }
+    .status.error { color:red; }
+  </style>
 </head>
-<body class="dashboard dark">
-  <aside class="sidebar">
-    <img src="logo.png" class="logo">
-    <ul>
-      <li><a href="inicio.html">🏠 Início</a></li>
-      <li class="active"><a href="conexao.html">🔗 Conexão</a></li>
-      <li><a href="mensagens.html">💬 Mensagens</a></li>
-      <li><a href="contatos.html">👥 Contatos</a></li>
-      <li><a href="estatisticas.html">📊 Estatísticas</a></li>
-      <li><a href="config.html">⚙️ Configurações</a></li>
-    </ul>
-  </aside>
+<body>
+  <div class="container">
+    <h2>Conexão</h2>
 
-  <main>
-    <h1>Conexão</h1>
-
-    <!-- Conectar via QR -->
-    <section>
-      <h2>📲 Conectar via QR Code</h2>
-      <button onclick="gerarQRCode()">Gerar QR Code</button>
-      <div id="qrcodeArea" style="margin-top:20px; text-align:center;">
-        <p>⚠️ Clique em "Gerar QR Code" para iniciar.</p>
+    <!-- QR CODE -->
+    <div class="card">
+      <h3>🔗 Conectar via QR Code</h3>
+      <button class="btn btn-red" onclick="gerarQR()">Gerar QR Code</button>
+      <div class="qr-box" id="qrBox">
+        <p class="status error">❌ Não conectado</p>
       </div>
-      <p id="statusConexao">🔄 Verificando status...</p>
-    </section>
-  </main>
+    </div>
+
+    <!-- Conexão por número -->
+    <div class="card">
+      <h3>📞 Conectar com número</h3>
+      <input type="text" id="numero" placeholder="Ex: 559491234567" style="width:100%;padding:10px;margin-top:10px;">
+      <button class="btn btn-red" style="margin-top:10px;" onclick="conectarNumero()">Conectar Número</button>
+      <div id="statusNumero" class="status">⌛ Aguardando...</div>
+    </div>
+  </div>
 
   <script>
-    async function gerarQRCode() {
+    // Gerar QR Code
+    async function gerarQR() {
+      const qrBox = document.getElementById("qrBox");
+      qrBox.innerHTML = "⌛ Gerando QR Code...";
+
       try {
         const res = await fetch("/api/generate-qr");
         const data = await res.json();
+
         if (data.qrCode) {
-          document.getElementById("qrcodeArea").innerHTML =
-            `<img src="${data.qrCode}" style="max-width:250px;">`;
+          qrBox.innerHTML = `<img src="${data.qrCode}" alt="QR Code">`;
         } else {
-          document.getElementById("qrcodeArea").innerHTML =
-            `<p style="color:red;">❌ ${data.error || "Nenhum QR retornado"}</p>`;
+          qrBox.innerHTML = `<p class="status error">❌ Nenhum QR retornado</p>`;
+          console.error("Resposta completa:", data);
         }
       } catch (err) {
-        document.getElementById("qrcodeArea").innerHTML =
-          `<p style="color:red;">❌ Erro: ${err.message}</p>`;
+        qrBox.innerHTML = `<p class="status error">❌ Erro ao gerar QR Code</p>`;
+        console.error(err);
       }
     }
 
-    async function verificarStatus() {
+    // Conectar com número
+    async function conectarNumero() {
+      const numero = document.getElementById("numero").value;
+      const statusDiv = document.getElementById("statusNumero");
+
+      if (!numero) {
+        statusDiv.innerHTML = "⚠️ Informe um número!";
+        statusDiv.className = "status error";
+        return;
+      }
+
+      statusDiv.innerHTML = "⌛ Conectando...";
       try {
         const res = await fetch("/api/status");
         const data = await res.json();
 
-        if (data.connected || data.instanceStatus === "open") {
-          document.getElementById("statusConexao").innerText = "✅ Conectado";
+        console.log("Status recebido:", data);
+
+        if (data.connected || data.status === "CONNECTED" || data.message === "Connected") {
+          statusDiv.innerHTML = `✅ Conectado: ${numero}`;
+          statusDiv.className = "status ok";
         } else {
-          document.getElementById("statusConexao").innerText = "❌ Não conectado";
+          statusDiv.innerHTML = `❌ Não conectado`;
+          statusDiv.className = "status error";
         }
       } catch (err) {
-        document.getElementById("statusConexao").innerText =
-          `❌ Erro: ${err.message}`;
+        statusDiv.innerHTML = "❌ Erro ao verificar conexão";
+        statusDiv.className = "status error";
+        console.error(err);
       }
     }
-
-    // checar status a cada 5s
-    setInterval(verificarStatus, 5000);
-    verificarStatus();
   </script>
 </body>
 </html>

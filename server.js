@@ -23,9 +23,17 @@ if (!fs.existsSync(CONTACTS_FILE)) fs.writeFileSync(CONTACTS_FILE, "[]");
 app.get("/api/generate-qr", async (req, res) => {
   try {
     const { ZAPI_INSTANCE_ID, ZAPI_TOKEN } = process.env;
-    const url = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/qr-code`;
 
-    const response = await axios.get(url);
+    let url = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/qr-code`;
+    let response;
+
+    try {
+      response = await axios.get(url);
+    } catch (err) {
+      console.log("⚠️ Falha no endpoint padrão, tentando fallback Cloud...");
+      url = `https://api.z-api.io/instances/qr-code/${ZAPI_INSTANCE_ID}/${ZAPI_TOKEN}`;
+      response = await axios.get(url);
+    }
 
     console.log("Resposta Z-API QR:", response.data);
 
@@ -49,13 +57,21 @@ app.get("/api/generate-qr", async (req, res) => {
 app.get("/api/status", async (req, res) => {
   try {
     const { ZAPI_INSTANCE_ID, ZAPI_TOKEN } = process.env;
-    const url = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/status`;
 
-    const response = await axios.get(url);
+    let url = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/status`;
+    let response;
+
+    try {
+      response = await axios.get(url);
+    } catch (err) {
+      console.log("⚠️ Falha no endpoint padrão de status, tentando fallback Cloud...");
+      url = `https://api.z-api.io/instances/status/${ZAPI_INSTANCE_ID}/${ZAPI_TOKEN}`;
+      response = await axios.get(url);
+    }
 
     console.log("Resposta Z-API STATUS:", response.data);
 
-    res.json(response.data); // retorna o status real da instância
+    res.json(response.data);
   } catch (err) {
     console.error("Erro ao buscar status:", err.message);
     res.status(500).json({ error: err.message });

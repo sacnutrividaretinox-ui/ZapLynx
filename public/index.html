@@ -5,64 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
   <style>
-    body {
-      background: #0f172a;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #38bdf8;
-    }
-    .card {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 12px;
-      margin: 10px;
-      width: 320px;
-      text-align: center;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      background: #22c55e;
-      color: white;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background: #16a34a;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .stat {
-      background: #0f172a;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
+    body { background: #0f172a; font-family: Arial, sans-serif; color: #fff; text-align: center; }
+    h1 { color: #38bdf8; }
+    .card { background: #1e293b; margin: 15px auto; padding: 20px; border-radius: 12px; width: 350px; }
+    input, textarea, select { width: 100%; margin: 8px 0; padding: 10px; border-radius: 6px; border: none; }
+    button { width: 100%; padding: 10px; border: none; border-radius: 6px; background: #22c55e; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #16a34a; }
+    img { margin-top: 10px; border-radius: 8px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 10px; }
+    .stat { background: #0f172a; padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
   <h1>ZapLynx 🚀</h1>
+
+  <!-- Conexão -->
+  <div class="card">
+    <h3>Conectar WhatsApp</h3>
+    <select id="connectMode">
+      <option value="qr">QR Code</option>
+      <option value="phone">Número (Pairing Code)</option>
+    </select>
+    <div id="phoneInput" style="display:none;">
+      <input type="text" id="phoneConnect" placeholder="Número com DDI/DDD">
+    </div>
+    <button onclick="connect()">Conectar</button>
+    <p id="connectStatus"></p>
+    <img id="qrImage" style="display:none;" width="250">
+  </div>
 
   <!-- Enviar mensagem -->
   <div class="card">
@@ -85,49 +55,65 @@
   </div>
 
   <script>
+    const connectMode = document.getElementById("connectMode");
+    const phoneInput = document.getElementById("phoneInput");
+    connectMode.addEventListener("change", () => {
+      phoneInput.style.display = connectMode.value === "phone" ? "block" : "none";
+      document.getElementById("qrImage").style.display = "none";
+      document.getElementById("connectStatus").innerText = "";
+    });
+
+    async function connect() {
+      const mode = connectMode.value;
+      document.getElementById("connectStatus").innerText = "⏳ Conectando...";
+
+      if (mode === "qr") {
+        const res = await fetch("/api/qrcode");
+        const data = await res.json();
+        if (data.value) {
+          document.getElementById("qrImage").src = data.value;
+          document.getElementById("qrImage").style.display = "block";
+          document.getElementById("connectStatus").innerText = "✅ QR Code gerado!";
+        } else {
+          document.getElementById("connectStatus").innerText = "❌ Erro ao gerar QR.";
+        }
+      } else {
+        const phone = document.getElementById("phoneConnect").value.trim();
+        if (!phone) return alert("Digite o número!");
+        const res = await fetch(`/api/phone-code/${phone}`);
+        const data = await res.json();
+        if (data.code) {
+          document.getElementById("connectStatus").innerText = "📲 Código: " + data.code;
+        } else {
+          document.getElementById("connectStatus").innerText = "❌ Erro: " + (data.error || "Falha");
+        }
+      }
+    }
+
     async function sendMessage() {
       const phone = document.getElementById("phone").value.trim();
       const message = document.getElementById("message").value.trim();
-      if (!phone || !message) {
-        alert("Preencha número e mensagem!");
-        return;
-      }
+      if (!phone || !message) return alert("Preencha número e mensagem!");
 
-      document.getElementById("sendStatus").innerText = "Enviando...";
-
-      try {
-        const res = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, message })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          document.getElementById("sendStatus").innerText = "✅ Mensagem enviada!";
-        } else {
-          document.getElementById("sendStatus").innerText = "❌ Falha ao enviar!";
-        }
-      } catch (err) {
-        document.getElementById("sendStatus").innerText = "⚠️ Erro no envio.";
-        console.error(err);
-      }
+      document.getElementById("sendStatus").innerText = "⏳ Enviando...";
+      const res = await fetch("/api/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, message })
+      });
+      const data = await res.json();
+      document.getElementById("sendStatus").innerText = data.success ? "✅ Enviado!" : "❌ Erro ao enviar.";
     }
 
     async function loadStats() {
-      try {
-        const res = await fetch("/api/stats");
-        const data = await res.json();
-        document.getElementById("statTotal").innerText = data.total;
-        document.getElementById("statSuccess").innerText = data.success;
-        document.getElementById("statPending").innerText = data.pending;
-        document.getElementById("statFail").innerText = data.fail;
-      } catch (err) {
-        console.error("Erro ao carregar estatísticas:", err);
-      }
+      const res = await fetch("/api/stats");
+      const data = await res.json();
+      document.getElementById("statTotal").innerText = data.total;
+      document.getElementById("statSuccess").innerText = data.success;
+      document.getElementById("statPending").innerText = data.pending;
+      document.getElementById("statFail").innerText = data.fail;
     }
-
-    setInterval(loadStats, 3000); // atualiza a cada 3s
+    setInterval(loadStats, 3000);
     loadStats();
   </script>
 </body>

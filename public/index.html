@@ -13,52 +13,65 @@
     <!-- Conectar WhatsApp -->
     <div class="card">
       <h2>Conectar WhatsApp</h2>
-      <button id="btnQr">Conectar via QR Code</button>
-      <input type="text" id="phoneConnect" placeholder="Número (com DDI/DDD)">
-      <button id="btnPhone">Conectar via Número</button>
-      <div id="connectResult"></div>
+      <select id="connectMode" onchange="toggleConnectMode()">
+        <option value="qr">Via QR Code</option>
+        <option value="phone">Via Número</option>
+      </select>
+      <div id="qrSection">
+        <button onclick="getQRCode()">Gerar QR Code</button>
+        <div id="qrcode"></div>
+      </div>
+      <div id="phoneSection" style="display:none;">
+        <input type="text" id="phoneConnect" placeholder="Número com DDI/DDD">
+        <button onclick="getPhoneCode()">Gerar Código</button>
+        <div id="phoneCodeResult"></div>
+      </div>
     </div>
 
-    <!-- Enviar Mensagem -->
+    <!-- Enviar mensagem -->
     <div class="card">
       <h2>Enviar Mensagem</h2>
       <input type="text" id="phone" placeholder="Número com DDI/DDD">
       <textarea id="message" placeholder="Digite sua mensagem"></textarea>
-      <button id="btnSend">Enviar</button>
-      <div id="sendResult"></div>
+      <button onclick="sendMessage()">Enviar</button>
+      <div id="sendStatus"></div>
     </div>
   </div>
 
   <script>
-    // Conectar QR
-    document.getElementById("btnQr").addEventListener("click", async () => {
-      const res = await fetch("/qrcode");
-      const data = await res.json();
-      document.getElementById("connectResult").innerText = JSON.stringify(data, null, 2);
-    });
+    function toggleConnectMode() {
+      const mode = document.getElementById("connectMode").value;
+      document.getElementById("qrSection").style.display = mode === "qr" ? "block" : "none";
+      document.getElementById("phoneSection").style.display = mode === "phone" ? "block" : "none";
+    }
 
-    // Conectar via Número
-    document.getElementById("btnPhone").addEventListener("click", async () => {
-      const phone = document.getElementById("phoneConnect").value;
-      const res = await fetch(`/phone-code/${phone}`);
+    async function getQRCode() {
+      const res = await fetch("/api/qrcode");
       const data = await res.json();
-      document.getElementById("connectResult").innerText = JSON.stringify(data, null, 2);
-    });
+      document.getElementById("qrcode").innerText = JSON.stringify(data, null, 2);
+    }
 
-    // Enviar Mensagem
-    document.getElementById("btnSend").addEventListener("click", async () => {
+    async function getPhoneCode() {
+      const phone = document.getElementById("phoneConnect").value.trim();
+      if (!phone) return alert("Digite um número válido!");
+      const res = await fetch(`/api/phone-code/${phone}`);
+      const data = await res.json();
+      document.getElementById("phoneCodeResult").innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function sendMessage() {
       const phone = document.getElementById("phone").value;
       const message = document.getElementById("message").value;
 
-      const res = await fetch("/send", {
+      const res = await fetch("/api/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, message }),
+        body: JSON.stringify({ phone, message })
       });
 
       const data = await res.json();
-      document.getElementById("sendResult").innerText = JSON.stringify(data, null, 2);
-    });
+      document.getElementById("sendStatus").innerText = JSON.stringify(data, null, 2);
+    }
   </script>
 </body>
 </html>

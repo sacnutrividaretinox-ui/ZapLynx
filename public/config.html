@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapLynx - Configurações</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard dark">
+  <aside class="sidebar">
+    <img src="logo.png" class="logo">
+    <ul>
+      <li><a href="index.html">🏠 Início</a></li>
+      <li><a href="conexao.html">🔗 Conexão</a></li>
+      <li><a href="mensagens.html">💬 Mensagens</a></li>
+      <li><a href="contatos.html">👥 Contatos</a></li>
+      <li><a href="estatisticas.html">📊 Estatísticas</a></li>
+      <li class="active"><a href="config.html">⚙️ Configurações</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <h1>Configurações</h1>
+    <label>
+      <input type="checkbox" id="toggleTheme">
+      🌙 Tema Dark/White
+    </label>
+
+    <hr style="margin:20px 0;">
+
+    <h2>Exportar Dados</h2>
+    <button onclick="baixarCSV()">📥 Baixar Relatório (CSV)</button>
+    <button onclick="baixarJSON()">📥 Baixar Relatório (JSON)</button>
+  </main>
+
+  <script>
+    function baixarCSV() {
+      window.location.href = "/api/export/csv";
+    }
+    function baixarJSON() {
+      window.location.href = "/api/export/json";
+    }
+  </script>
+</body>
+</html>

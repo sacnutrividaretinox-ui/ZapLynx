@@ -51,24 +51,50 @@
     </section>
   </main>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Exemplo de gráfico inicial
-    new Chart(document.getElementById('chartMsgs'), {
-      type: 'line',
-      data: {
-        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-        datasets: [{
-          label: 'Mensagens enviadas',
-          data: [5, 12, 8, 20, 15, 30, 10],
-          borderColor: '#ff0000',
-          backgroundColor: 'rgba(255,0,0,0.2)',
-          fill: true,
-          tension: 0.3
-        }]
+    // Carregar estatísticas para o gráfico
+    async function carregarEstatisticas() {
+      const res = await fetch("/api/stats");
+      const stats = await res.json();
+
+      new Chart(document.getElementById("chartMsgs"), {
+        type: "line",
+        data: {
+          labels: stats.labels,
+          datasets: [{
+            label: "Mensagens enviadas",
+            data: stats.data,
+            borderColor: "#ff0000",
+            backgroundColor: "rgba(255,0,0,0.2)",
+            fill: true,
+            tension: 0.3
+          }]
+        }
+      });
+    }
+
+    // Carregar histórico
+    async function carregarHistorico() {
+      const res = await fetch("/api/history");
+      const history = await res.json();
+      const list = document.getElementById("historyList");
+
+      if (!history || history.length === 0) {
+        list.innerHTML = "<li>⏳ Nenhuma atividade ainda...</li>";
+        return;
       }
-    });
+
+      list.innerHTML = "";
+      history.forEach(log => {
+        const li = document.createElement("li");
+        li.innerText = `📤 ${log.phone}: "${log.message}" (${new Date(log.date).toLocaleString()})`;
+        list.appendChild(li);
+      });
+    }
+
+    carregarEstatisticas();
+    carregarHistorico();
   </script>
 </body>
 </html>

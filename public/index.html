@@ -5,90 +5,136 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
   <style>
-    body { background:#0d1117; color:#e6edf3; font-family:Segoe UI, sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
-    h1 { color:#58a6ff; margin-bottom:20px; }
-    .card { background:#161b22; padding:20px; border-radius:12px; margin:10px 0; width:100%; max-width:450px; box-shadow:0 4px 8px rgba(0,0,0,0.5); }
-    .card h2 { margin-bottom:10px; color:#79c0ff; }
-    input, select, textarea { width:100%; padding:10px; margin:5px 0; border:none; border-radius:8px; background:#0d1117; color:#e6edf3; }
-    button { background:#238636; color:white; border:none; padding:10px; width:100%; margin-top:8px; border-radius:8px; cursor:pointer; font-weight:bold; }
-    button:hover { background:#2ea043; }
-    img { max-width:200px; margin:15px auto; display:block; border:2px solid #30363d; border-radius:8px; }
-    p { font-size:14px; margin-top:8px; color:#8b949e; text-align:center; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0f172a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { color: #3b82f6; margin-bottom: 20px; }
+    .card {
+      background-color: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+    .card h2 { margin-top: 0; font-size: 1.2rem; color: #38bdf8; }
+    input, select, textarea, button {
+      width: 100%; margin: 10px 0; padding: 10px;
+      border-radius: 6px; border: none; font-size: 1rem;
+    }
+    input, select, textarea { background: #0f172a; color: #fff; border: 1px solid #334155; }
+    button { background: #22c55e; color: #fff; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #16a34a; }
+    .qr-container { display: flex; justify-content: center; margin: 15px 0; }
+    #qrCode { max-width: 250px; border: 4px solid #fff; border-radius: 10px; }
+    .status { font-size: 0.9rem; margin-top: 8px; text-align: center; color: #facc15; }
   </style>
 </head>
 <body>
   <h1>ZapLynx 🚀</h1>
 
+  <!-- Conectar -->
   <div class="card">
     <h2>Conectar WhatsApp</h2>
     <select id="connectMode">
       <option value="qrcode">QR Code</option>
       <option value="number">Número (Pairing Code)</option>
     </select>
-    <input type="text" id="phoneInput" placeholder="Digite o número (com DDI/DD)" style="display:none">
-    <button onclick="connect()">Conectar</button>
-    <div id="qrContainer"></div>
-    <p id="connectStatus">Aguardando ação...</p>
+    <input type="text" id="phoneInput" placeholder="Número com DDI/DD" style="display:none;">
+    <button onclick="connectWhatsApp()">Conectar</button>
+    <div class="qr-container">
+      <img id="qrCode" src="" alt="QR Code" style="display:none;">
+    </div>
+    <div id="statusConnect" class="status">Aguardando...</div>
   </div>
 
+  <!-- Enviar Mensagem -->
   <div class="card">
     <h2>Enviar Mensagem</h2>
-    <input type="text" id="msgPhone" placeholder="Número (com DDI/DD)">
-    <textarea id="msgText" placeholder="Digite sua mensagem"></textarea>
+    <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
+    <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
     <button onclick="sendMessage()">Enviar</button>
-    <p id="msgStatus">Aguardando envio...</p>
+    <div id="statusSend" class="status">Aguardando envio...</div>
   </div>
 
   <script>
-    async function connect() {
+    async function connectWhatsApp() {
       const mode = document.getElementById("connectMode").value;
       const phone = document.getElementById("phoneInput").value;
-      const status = document.getElementById("connectStatus");
-      const qrDiv = document.getElementById("qrContainer");
+      const qrImg = document.getElementById("qrCode");
+      const status = document.getElementById("statusConnect");
 
-      status.textContent = "Conectando...";
-      qrDiv.innerHTML = "";
+      status.textContent = "Aguardando...";
+      qrImg.style.display = "none";
 
-      if (mode === "qrcode") {
-        const res = await fetch("/api/qrcode");
-        const data = await res.json();
-        if (data.qr) {
-          const img = document.createElement("img");
-          img.src = data.qr;
-          qrDiv.appendChild(img);
-          status.textContent = "QR Code gerado!";
+      try {
+        if (mode === "qrcode") {
+          const res = await fetch("/api/qrcode");
+          const data = await res.json();
+          if (data.qr) {
+            qrImg.src = data.qr;
+            qrImg.style.display = "block";
+            status.textContent = "✅ QR Code gerado!";
+          } else {
+            status.textContent = "❌ Nenhum QR retornado.";
+          }
         } else {
-          status.textContent = "Erro ao gerar QR Code.";
+          const res = await fetch("/api/connect-number", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone })
+          });
+          const data = await res.json();
+          if (data?.error) {
+            status.textContent = "❌ Erro: " + data.error;
+          } else {
+            status.textContent = "✅ Código enviado para o número!";
+          }
         }
-      } else {
-        const res = await fetch("/api/connect-number", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({ phone })
-        });
-        const data = await res.json();
-        status.textContent = data.error ? "Erro ao conectar pelo número" : "Conectado pelo número!";
+      } catch (err) {
+        console.error("Erro conectar:", err);
+        status.textContent = "❌ Falha na conexão.";
       }
     }
 
     async function sendMessage() {
-      const phone = document.getElementById("msgPhone").value;
-      const message = document.getElementById("msgText").value;
-      const status = document.getElementById("msgStatus");
+      const phone = document.getElementById("sendPhone").value;
+      const message = document.getElementById("sendMessage").value;
+      const status = document.getElementById("statusSend");
 
-      status.textContent = "Enviando...";
-      const res = await fetch("/api/send", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ phone, message })
-      });
-      const data = await res.json();
-      status.textContent = data.error ? "Erro ao enviar" : "Mensagem enviada!";
+      status.textContent = "⏳ Enviando...";
+
+      try {
+        const res = await fetch("/api/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, message })
+        });
+        const data = await res.json();
+        if (data?.error) {
+          status.textContent = "❌ Erro: " + data.error;
+        } else {
+          status.textContent = "✅ Mensagem enviada!";
+        }
+      } catch (err) {
+        console.error("Erro enviar:", err);
+        status.textContent = "❌ Falha no envio.";
+      }
     }
 
-    // Troca visibilidade input quando mudar opção
-    document.getElementById("connectMode").addEventListener("change", e => {
-      document.getElementById("phoneInput").style.display = e.target.value === "number" ? "block" : "none";
+    document.getElementById("connectMode").addEventListener("change", (e) => {
+      const phoneInput = document.getElementById("phoneInput");
+      phoneInput.style.display = e.target.value === "number" ? "block" : "none";
     });
   </script>
 </body>

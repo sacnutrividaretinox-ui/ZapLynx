@@ -7,88 +7,58 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>ZapLynx 🚀</h1>
+  <div class="container">
+    <h1>ZapLynx 🚀</h1>
 
-  <!-- Conectar WhatsApp -->
-  <section>
-    <h2>Conectar WhatsApp</h2>
-    <input type="text" id="instanceName" placeholder="Nome da instância">
-    <input type="text" id="instanceDesc" placeholder="Descrição">
-    <button onclick="addInstance()">Criar Instância</button>
-    <p id="connectStatus"></p>
-  </section>
+    <!-- Conectar WhatsApp -->
+    <div class="card">
+      <h2>Conectar WhatsApp</h2>
+      <button id="btnQr">Conectar via QR Code</button>
+      <input type="text" id="phoneConnect" placeholder="Número (com DDI/DDD)">
+      <button id="btnPhone">Conectar via Número</button>
+      <div id="connectResult"></div>
+    </div>
 
-  <hr>
-
-  <!-- Enviar Mensagem -->
-  <section>
-    <h2>Enviar Mensagem</h2>
-    <input type="text" id="phone" placeholder="Número com DDI/DD">
-    <textarea id="message" placeholder="Digite sua mensagem"></textarea>
-    <button onclick="sendMessage()">Enviar</button>
-    <p id="sendStatus"></p>
-  </section>
-
-  <hr>
-
-  <!-- Histórico -->
-  <section>
-    <h2>📜 Histórico de Mensagens</h2>
-    <button onclick="loadMessages()">🔄 Atualizar Histórico</button>
-    <ul id="messageList"></ul>
-  </section>
+    <!-- Enviar Mensagem -->
+    <div class="card">
+      <h2>Enviar Mensagem</h2>
+      <input type="text" id="phone" placeholder="Número com DDI/DDD">
+      <textarea id="message" placeholder="Digite sua mensagem"></textarea>
+      <button id="btnSend">Enviar</button>
+      <div id="sendResult"></div>
+    </div>
+  </div>
 
   <script>
-    // Criar instância
-    async function addInstance() {
-      const nome = document.getElementById("instanceName").value;
-      const descricao = document.getElementById("instanceDesc").value;
-
-      const res = await fetch("/instancia", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, descricao })
-      });
-
+    // Conectar QR
+    document.getElementById("btnQr").addEventListener("click", async () => {
+      const res = await fetch("/qrcode");
       const data = await res.json();
-      document.getElementById("connectStatus").innerText = "Instância criada!";
-      console.log(data);
-    }
+      document.getElementById("connectResult").innerText = JSON.stringify(data, null, 2);
+    });
 
-    // Enviar mensagem
-    async function sendMessage() {
+    // Conectar via Número
+    document.getElementById("btnPhone").addEventListener("click", async () => {
+      const phone = document.getElementById("phoneConnect").value;
+      const res = await fetch(`/phone-code/${phone}`);
+      const data = await res.json();
+      document.getElementById("connectResult").innerText = JSON.stringify(data, null, 2);
+    });
+
+    // Enviar Mensagem
+    document.getElementById("btnSend").addEventListener("click", async () => {
       const phone = document.getElementById("phone").value;
       const message = document.getElementById("message").value;
 
       const res = await fetch("/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, message })
+        body: JSON.stringify({ phone, message }),
       });
 
       const data = await res.json();
-      document.getElementById("sendStatus").innerText = "Mensagem enviada!";
-      console.log(data);
-
-      loadMessages(); // Atualiza o histórico automaticamente
-    }
-
-    // Carregar histórico
-    async function loadMessages() {
-      const res = await fetch("/mensagens");
-      const mensagens = await res.json();
-
-      const list = document.getElementById("messageList");
-      list.innerHTML = "";
-      mensagens.forEach(msg => {
-        const li = document.createElement("li");
-        li.innerText = `${msg.phone}: ${msg.message} (enviado em ${new Date(msg.enviadoEm).toLocaleString()})`;
-        list.appendChild(li);
-      });
-    }
-
-    // Carregar histórico ao abrir a página
-    loadMessages();
+      document.getElementById("sendResult").innerText = JSON.stringify(data, null, 2);
+    });
   </script>
 </body>
 </html>

@@ -6,47 +6,68 @@ const path = require("path");
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"))); // frontend na pasta public
+app.use(express.static(path.join(__dirname, "public"))); // front-end
 
-// 🔑 Credenciais Z-API (vem do Railway)
+// 🔑 Variáveis da Z-API (configure no Railway)
 const ZAPI = {
   instanceId: process.env.ZAPI_INSTANCE_ID,
   token: process.env.ZAPI_TOKEN,
-  clientToken: process.env.ZAPI_CLIENT_TOKEN,
-  baseUrl() {
-    return `https://api.z-api.io/instances/${this.instanceId}/token/${this.token}`;
-  }
+  clientToken: process.env.ZAPI_CLIENT_TOKEN
 };
 
-// ✅ Gerar QR Code
+// ✅ Rota para pegar QR Code
 app.get("/api/qrcode", async (req, res) => {
   try {
-    const response = await axios.get(`${ZAPI.baseUrl()}/qrcode`, {
+    const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/qr-code/image`;
+    const response = await axios.get(url, {
       headers: { "client-token": ZAPI.clientToken }
     });
     res.json(response.data);
-  } catch (err) {
-    console.error("❌ Erro ao buscar QRCode:", err.response?.data || err.message);
-    res.status(500).json({ error: "Erro ao buscar QRCode" });
+  } catch (error) {
+    console.error("Erro QR:", error.response?.data || error.message);
+    res.status(500).json({ error: "Erro ao buscar QR Code" });
   }
 });
 
-// ✅ Enviar mensagem
+// ✅ Rota para conectar com número (Phone Code)
+app.get("/api/phone-code/:phone", async (req, res) => {
+  try {
+    const { phone } = req.params;
+    const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/phone-code/${phone}`;
+
+    const response = await axios.get(url, {
+      headers: { "client-token": ZAPI.clientToken }
+    });
+
+    console.log("Resposta Phone Code:", response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error("Erro ao gerar Phone Code:", error.response?.data || error.message);
+    res.status(500).json({ error: "Erro ao gerar Phone Code" });
+  }
+});
+
+// ✅ Rota para enviar mensagem
 app.post("/api/send", async (req, res) => {
   try {
     const { phone, message } = req.body;
+    const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/send-text`;
+
     const response = await axios.post(
-      `${ZAPI.baseUrl()}/send-text`,
+      url,
       { phone, message },
       { headers: { "client-token": ZAPI.clientToken } }
     );
+
     res.json(response.data);
-  } catch (err) {
-    console.error("❌ Erro ao enviar mensagem:", err.response?.data || err.message);
+  } catch (error) {
+    console.error("Erro ao enviar mensagem:", error.response?.data || error.message);
     res.status(500).json({ error: "Erro ao enviar mensagem" });
   }
 });
 
-// 🚀 Start
+// 🚀 Inicializar servidor
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});

@@ -4,23 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #0a0f1c; color: #fff; text-align: center; }
-    .card { background: #141c2c; padding: 20px; border-radius: 12px; width: 340px; margin: 15px auto; }
-    select, input, textarea, button {
-      width: 100%; padding: 10px; margin: 8px 0;
-      border-radius: 6px; border: none;
-    }
-    button { background: #1e90ff; color: white; font-weight: bold; cursor: pointer; }
-    button:hover { background: #0d6efd; }
-    img { margin-top: 10px; max-width: 250px; }
-    .status { font-size: 14px; margin-top: 8px; }
-    .error { color: #ff4444; }
-    .success { color: #44ff44; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Logo -->
+  <img src="logo.png" alt="ZapLynx Logo" class="logo">
+
   <h1>ZapLynx 🚀</h1>
+
+  <!-- Botão de alternância de tema -->
+  <button id="toggleTheme">🌙 Tema Dark</button>
 
   <!-- Card de conexão -->
   <div class="card">
@@ -44,85 +37,26 @@
     <p id="sendStatus" class="status">⏳ Aguardando...</p>
   </div>
 
+  <script src="app.js"></script>
   <script>
-    const modeSelect = document.getElementById("connectMode");
-    const phoneInput = document.getElementById("phoneInput");
-    const qrContainer = document.getElementById("qrContainer");
-    const connectStatus = document.getElementById("connectStatus");
+    // Alternância de tema
+    const body = document.body;
+    const btn = document.getElementById("toggleTheme");
 
-    modeSelect.addEventListener("change", () => {
-      phoneInput.style.display = modeSelect.value === "phone" ? "block" : "none";
-      qrContainer.innerHTML = "";
-      connectStatus.innerText = "⏳ Aguardando...";
+    function setTheme(theme) {
+      body.className = theme;
+      localStorage.setItem("theme", theme);
+      btn.innerText = theme === "dark" ? "🌙 Tema Dark" : "☀️ Tema White";
+    }
+
+    btn.addEventListener("click", () => {
+      const newTheme = body.classList.contains("dark") ? "white" : "dark";
+      setTheme(newTheme);
     });
 
-    async function connect() {
-      qrContainer.innerHTML = "";
-      connectStatus.innerText = "⏳ Conectando...";
-
-      try {
-        if (modeSelect.value === "qrcode") {
-          const res = await fetch("/api/qrcode");
-          const data = await res.json();
-          if (data?.value) {
-            qrContainer.innerHTML = `<img src="${data.value}" alt="QR Code">`;
-            connectStatus.innerText = "✅ QR Code gerado!";
-            connectStatus.className = "success";
-          } else {
-            connectStatus.innerText = "⚠️ Nenhum QR retornado.";
-            connectStatus.className = "error";
-          }
-        } else {
-          const phone = phoneInput.value.trim();
-          if (!phone) {
-            connectStatus.innerText = "⚠️ Digite um número válido.";
-            connectStatus.className = "error";
-            return;
-          }
-          const res = await fetch(`/api/phone-code/${phone}`);
-          const data = await res.json();
-          if (data?.code) {
-            connectStatus.innerText = `✅ Código de conexão: ${data.code}`;
-            connectStatus.className = "success";
-          } else {
-            connectStatus.innerText = "⚠️ Nenhum código retornado.";
-            connectStatus.className = "error";
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        connectStatus.innerText = "❌ Erro ao conectar.";
-        connectStatus.className = "error";
-      }
-    }
-
-    async function sendMessage() {
-      const phone = document.getElementById("sendPhone").value.trim();
-      const message = document.getElementById("sendMessage").value.trim();
-      const sendStatus = document.getElementById("sendStatus");
-
-      if (!phone || !message) {
-        sendStatus.innerText = "⚠️ Preencha número e mensagem!";
-        sendStatus.className = "error";
-        return;
-      }
-
-      sendStatus.innerText = "⏳ Enviando...";
-      try {
-        const res = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, message })
-        });
-        const data = await res.json();
-        sendStatus.innerText = "✅ Mensagem enviada!";
-        sendStatus.className = "success";
-      } catch (err) {
-        console.error(err);
-        sendStatus.innerText = "❌ Erro ao enviar mensagem.";
-        sendStatus.className = "error";
-      }
-    }
+    // Carregar tema salvo
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    setTheme(savedTheme);
   </script>
 </body>
 </html>

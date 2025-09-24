@@ -2,164 +2,95 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Conexão</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .main-container {
-      margin-left: 240px; /* sidebar */
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
-      max-width: 900px;
-    }
-    h2 {
-      margin-bottom: 10px;
-      color: #fff;
-    }
-    .card {
-      background: #1c1c1c;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-    }
-    .card h3 {
-      margin-bottom: 20px;
-      color: #ff4d4d;
-    }
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: 0.2s;
-      text-align: center;
-    }
-    .btn-red {
-      background: #ff1a1a;
-      color: #fff;
-    }
-    .btn-red:hover {
-      background: #cc0000;
-    }
-    .qr-box {
-      margin-top: 20px;
-      text-align: center;
-    }
-    .qr-box img {
-      max-width: 320px;
-      margin-top: 15px;
-      border: 3px solid #fff;
-      border-radius: 8px;
-    }
-    .status {
-      margin-top: 15px;
-      font-weight: bold;
-      text-align: center;
-      font-size: 15px;
-    }
-    .status.ok { color: lime; }
-    .status.error { color: #ff3333; }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border-radius: 6px;
-      border: none;
-      font-size: 15px;
-    }
-  </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="logo.png" alt="ZapLynx" style="max-width:140px;">
-    </div>
-    <ul>
-      <li><a href="inicio.html">🏠 Início</a></li>
-      <li class="active"><a href="conexao.html">🔗 Conexão</a></li>
-      <li><a href="mensagens.html">💬 Mensagens</a></li>
-      <li><a href="contatos.html">👥 Contatos</a></li>
-      <li><a href="estatisticas.html">📊 Estatísticas</a></li>
-      <li><a href="configuracoes.html">⚙️ Configurações</a></li>
-    </ul>
-  </div>
-
-  <!-- Conteúdo -->
-  <div class="main-container">
+  <div class="container">
     <h2>Conexão</h2>
 
-    <!-- QR Code -->
+    <!-- Conectar via QR Code -->
     <div class="card">
       <h3>📲 Conectar via QR Code</h3>
-      <button class="btn btn-red" onclick="gerarQR()">Gerar QR Code</button>
-      <div class="qr-box" id="qrBox">
-        <p class="status error">❌ Nenhum QR retornado</p>
+      <button id="btnQr" class="btn">Gerar QR Code</button>
+      <div id="qrCodeArea" class="qr-area">
+        <p id="qrMessage">⚠ Nenhum QR retornado</p>
+        <img id="qrImage" src="" alt="QR Code" style="display:none; max-width:200px; margin-top:10px;">
       </div>
     </div>
 
-    <!-- Número -->
+    <!-- Conectar com Número -->
     <div class="card">
       <h3>📞 Conectar com número</h3>
-      <input type="text" id="numero" placeholder="Ex: 559491234567">
-      <button class="btn btn-red" onclick="conectarNumero()">Conectar Número</button>
-      <div id="statusNumero" class="status">⌛ Aguardando...</div>
+      <input type="text" id="phoneNumber" placeholder="Digite o número (com DDI)">
+      <button id="btnConnectNumber" class="btn">Conectar Número</button>
+      <p id="statusNumber" class="status">❌ Não conectado</p>
     </div>
   </div>
 
   <script>
-    async function gerarQR() {
-      const qrBox = document.getElementById("qrBox");
-      qrBox.innerHTML = "⌛ Gerando QR Code...";
+    // Gerar QR Code
+    document.getElementById("btnQr").addEventListener("click", async () => {
+      const qrMessage = document.getElementById("qrMessage");
+      const qrImage = document.getElementById("qrImage");
+
+      qrMessage.textContent = "⏳ Gerando QR Code...";
+      qrImage.style.display = "none";
 
       try {
-        const res = await fetch("/api/generate-qr");
-        const data = await res.json();
+        const response = await fetch("/api/qrcode"); // ✅ rota corrigida
+        if (!response.ok) throw new Error("Erro ao gerar QR Code");
 
-        if (data.qrCode) {
-          qrBox.innerHTML = `<img src="${data.qrCode}" alt="QR Code">`;
+        const data = await response.json();
+        if (data.qr) {
+          qrImage.src = data.qr;
+          qrImage.style.display = "block";
+          qrMessage.textContent = "";
         } else {
-          qrBox.innerHTML = `<p class="status error">❌ Nenhum QR retornado</p>`;
+          qrMessage.textContent = "⚠ Nenhum QR retornado";
         }
-      } catch (err) {
-        qrBox.innerHTML = `<p class="status error">❌ Erro ao gerar QR Code</p>`;
-        console.error(err);
+      } catch (error) {
+        console.error("Erro:", error);
+        qrMessage.textContent = "❌ Erro ao gerar QR Code";
       }
-    }
+    });
 
-    async function conectarNumero() {
-      const numero = document.getElementById("numero").value;
-      const statusDiv = document.getElementById("statusNumero");
+    // Conectar Número
+    document.getElementById("btnConnectNumber").addEventListener("click", async () => {
+      const phone = document.getElementById("phoneNumber").value.trim();
+      const status = document.getElementById("statusNumber");
 
-      if (!numero) {
-        statusDiv.innerHTML = "⚠️ Informe um número!";
-        statusDiv.className = "status error";
+      if (!phone) {
+        status.textContent = "⚠ Digite um número válido";
+        status.style.color = "orange";
         return;
       }
 
-      statusDiv.innerHTML = "⌛ Conectando...";
-      try {
-        const res = await fetch("/api/status");
-        const data = await res.json();
+      status.textContent = "⏳ Conectando...";
+      status.style.color = "yellow";
 
-        if (data.connected || data.status === "CONNECTED") {
-          statusDiv.innerHTML = `✅ Conectado: ${numero}`;
-          statusDiv.className = "status ok";
+      try {
+        const response = await fetch("/api/connect-number", { // ✅ rota correta
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          status.textContent = "✅ Conectado: " + phone;
+          status.style.color = "lightgreen";
         } else {
-          statusDiv.innerHTML = `❌ Não conectado`;
-          statusDiv.className = "status error";
+          status.textContent = "❌ Falha ao conectar";
+          status.style.color = "red";
         }
-      } catch (err) {
-        statusDiv.innerHTML = "❌ Erro ao verificar conexão";
-        statusDiv.className = "status error";
+      } catch (error) {
+        console.error("Erro:", error);
+        status.textContent = "❌ Erro ao conectar número";
+        status.style.color = "red";
       }
-    }
+    });
   </script>
 </body>
 </html>

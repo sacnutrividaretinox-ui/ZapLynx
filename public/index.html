@@ -3,78 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZapLynx Cloud</title>
+  <title>ZapLynx - Início</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="pro dark">
+<body class="dashboard dark">
   <!-- Sidebar -->
   <aside class="sidebar">
-    <img src="logo.png" class="logo">
+    <img src="logo.png" alt="ZapLynx Logo" class="logo">
     <ul>
-      <li onclick="showTab('dashboard')">📊 Dashboard</li>
-      <li onclick="showTab('conexao')">🔗 Conexão</li>
-      <li onclick="showTab('mensagem')">💬 Mensagens</li>
-      <li onclick="showTab('contatos')">👥 Contatos</li>
+      <li class="active">🏠 Início</li>
+      <li>🔗 Conexão</li>
+      <li>💬 Mensagens</li>
+      <li>👥 Contatos</li>
+      <li>📊 Estatísticas</li>
+      <li>⚙️ Configurações</li>
     </ul>
   </aside>
 
   <!-- Main Content -->
   <main>
-    <!-- Dashboard -->
-    <section id="dashboard" class="tab active">
-      <h2>Estatísticas</h2>
+    <header>
+      <h1>Início</h1>
+      <p>Bem-vindo ao seu painel ZapLynx 🚀</p>
+    </header>
+
+    <!-- Cards de estatísticas -->
+    <section class="cards">
+      <div class="card">
+        <h3>📩 Hoje</h3>
+        <p id="statHoje">0</p>
+      </div>
+      <div class="card">
+        <h3>📊 Semana</h3>
+        <p id="statSemana">0</p>
+      </div>
+      <div class="card">
+        <h3>📆 Mês</h3>
+        <p id="statMes">0</p>
+      </div>
+      <div class="card">
+        <h3>👥 Contatos</h3>
+        <p id="statContatos">0</p>
+      </div>
+    </section>
+
+    <!-- Gráfico -->
+    <section class="chart">
+      <h2>Mensagens enviadas</h2>
       <canvas id="chartMsgs"></canvas>
     </section>
 
-    <!-- Conexão -->
-    <section id="conexao" class="tab">
-      <h2>Conectar WhatsApp</h2>
-      <select id="connectMode">
-        <option value="qrcode">QR Code</option>
-        <option value="phone">Número (Phone Code)</option>
-      </select>
-      <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
-      <button onclick="connect()">Conectar</button>
-      <div id="qrContainer"></div>
-      <p id="connectStatus" class="status">⏳ Aguardando...</p>
-    </section>
-
-    <!-- Envio de Mensagens -->
-    <section id="mensagem" class="tab">
-      <h2>Enviar Mensagem</h2>
-      <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
-      <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
-      <button onclick="sendMessage()">Enviar</button>
-      <p id="sendStatus" class="status">⏳ Aguardando...</p>
-    </section>
-
-    <!-- Contatos -->
-    <section id="contatos" class="tab">
-      <h2>Contatos</h2>
-      <input type="file" id="uploadCSV">
-      <div id="listaContatos"></div>
+    <!-- Histórico -->
+    <section class="history">
+      <h2>Histórico recente</h2>
+      <ul id="historyList">
+        <li>⏳ Nenhuma atividade ainda...</li>
+      </ul>
     </section>
   </main>
 
-  <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Navegação entre abas
-    function showTab(id) {
-      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-    }
-
     // Gráfico de mensagens (exemplo)
     new Chart(document.getElementById('chartMsgs'), {
-      type: 'bar',
+      type: 'line',
       data: {
-        labels: ['Hoje', 'Semana', 'Mês'],
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
         datasets: [{
           label: 'Mensagens enviadas',
-          data: [5, 20, 100], // pode trocar depois por dados reais
-          backgroundColor: '#ff0000'
+          data: [5, 12, 8, 20, 15, 30, 10],
+          borderColor: '#ff0000',
+          backgroundColor: 'rgba(255,0,0,0.2)',
+          fill: true,
+          tension: 0.3
         }]
       }
     });

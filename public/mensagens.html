@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapLynx - Mensagens</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard dark">
+  <aside class="sidebar">
+    <img src="logo.png" class="logo">
+    <ul>
+      <li><a href="inicio.html">🏠 Início</a></li>
+      <li><a href="conexao.html">🔗 Conexão</a></li>
+      <li class="active"><a href="mensagens.html">💬 Mensagens</a></li>
+      <li><a href="contatos.html">👥 Contatos</a></li>
+      <li><a href="estatisticas.html">📊 Estatísticas</a></li>
+      <li><a href="config.html">⚙️ Configurações</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <h1>Enviar Mensagem</h1>
+    <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
+    <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
+    <button onclick="sendMessage()">Enviar</button>
+    <p id="sendStatus" class="status">⏳ Aguardando...</p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

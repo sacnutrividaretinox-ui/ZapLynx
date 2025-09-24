@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapLynx - Início</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard dark">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <img src="logo.png" alt="ZapLynx Logo" class="logo">
+    <ul>
+      <li class="active"><a href="inicio.html">🏠 Início</a></li>
+      <li><a href="conexao.html">🔗 Conexão</a></li>
+      <li><a href="mensagens.html">💬 Mensagens</a></li>
+      <li><a href="contatos.html">👥 Contatos</a></li>
+      <li><a href="estatisticas.html">📊 Estatísticas</a></li>
+      <li><a href="config.html">⚙️ Configurações</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <main>
+    <header>
+      <h1>Início</h1>
+      <p>Bem-vindo ao seu painel ZapLynx 🚀</p>
+    </header>
+
+    <section class="cards">
+      <div class="card"><h3>📩 Hoje</h3><p id="statHoje">0</p></div>
+      <div class="card"><h3>📊 Semana</h3><p id="statSemana">0</p></div>
+      <div class="card"><h3>📆 Mês</h3><p id="statMes">0</p></div>
+      <div class="card"><h3>👥 Contatos</h3><p id="statContatos">0</p></div>
+    </section>
+
+    <section class="chart">
+      <h2>Mensagens enviadas</h2>
+      <canvas id="chartMsgs"></canvas>
+    </section>
+
+    <section class="history">
+      <h2>Histórico recente</h2>
+      <ul id="historyList">
+        <li>⏳ Nenhuma atividade ainda...</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    new Chart(document.getElementById('chartMsgs'), {
+      type: 'line',
+      data: {
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+        datasets: [{
+          label: 'Mensagens enviadas',
+          data: [5, 12, 8, 20, 15, 30, 10],
+          borderColor: '#ff0000',
+          backgroundColor: 'rgba(255,0,0,0.2)',
+          fill: true,
+          tension: 0.3
+        }]
+      }
+    });
+  </script>
+</body>
+</html>

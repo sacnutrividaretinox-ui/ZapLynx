@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapLynx - Estatísticas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard dark">
+  <aside class="sidebar">
+    <img src="logo.png" class="logo">
+    <ul>
+      <li><a href="inicio.html">🏠 Início</a></li>
+      <li><a href="conexao.html">🔗 Conexão</a></li>
+      <li><a href="mensagens.html">💬 Mensagens</a></li>
+      <li><a href="contatos.html">👥 Contatos</a></li>
+      <li class="active"><a href="estatisticas.html">📊 Estatísticas</a></li>
+      <li><a href="config.html">⚙️ Configurações</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <h1>Estatísticas avançadas</h1>
+    <canvas id="chartAdvanced"></canvas>
+  </main>
+
+  <script>
+    new Chart(document.getElementById('chartAdvanced'), {
+      type: 'bar',
+      data: {
+        labels: ['Janeiro', 'Fevereiro', 'Março'],
+        datasets: [{
+          label: 'Mensagens enviadas',
+          data: [100, 150, 200],
+          backgroundColor: '#ff0000'
+        }]
+      }
+    });
+  </script>
+</body>
+</html>

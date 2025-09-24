@@ -1,9 +1,14 @@
+/* Reset e base */
 body {
   font-family: 'Poppins', sans-serif;
   margin: 0;
   display: flex;
   background: #0d1117;
   color: white;
+}
+
+h1, h2, h3 {
+  margin: 0 0 15px 0;
 }
 
 /* Sidebar */
@@ -38,29 +43,26 @@ body {
   transition: background 0.3s;
 }
 
+.sidebar li a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .sidebar li:hover,
 .sidebar li.active {
   background: #ff0000;
   color: white;
 }
 
-/* Main */
+/* Main content */
 main {
   margin-left: 240px;
   padding: 30px;
   flex: 1;
 }
 
-header h1 {
-  margin: 0;
-  color: #ff0000;
-}
-
-header p {
-  color: #aaa;
-}
-
-/* Cards */
+/* Cards de estatísticas */
 .cards {
   display: flex;
   gap: 20px;
@@ -87,16 +89,52 @@ header p {
   font-weight: bold;
 }
 
-/* Gráfico */
-.chart {
-  margin: 30px 0;
+/* Inputs e botões */
+input, textarea, select {
+  width: 100%;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
 }
 
+textarea {
+  min-height: 100px;
+}
+
+button {
+  background: #ff0000;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #cc0000;
+}
+
+/* Status */
+.status {
+  font-size: 14px;
+  margin-top: 10px;
+  color: #aaa;
+}
+
+/* Gráficos */
 canvas {
   background: #fff;
   border-radius: 8px;
   padding: 10px;
   max-width: 700px;
+  margin-top: 20px;
 }
 
 /* Histórico */
@@ -110,4 +148,44 @@ canvas {
   padding: 12px;
   margin-bottom: 8px;
   border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Upload de contatos */
+#uploadCSV {
+  margin: 15px 0;
+}
+
+/* Configurações */
+label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 70px;
+    padding: 10px;
+  }
+
+  .sidebar .logo {
+    max-width: 50px;
+  }
+
+  .sidebar ul li {
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  main {
+    margin-left: 80px;
+    padding: 15px;
+  }
+
+  .cards {
+    flex-direction: column;
+  }
 }

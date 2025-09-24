@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapLynx - Conexão</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard dark">
+  <aside class="sidebar">
+    <img src="logo.png" class="logo">
+    <ul>
+      <li><a href="inicio.html">🏠 Início</a></li>
+      <li class="active"><a href="conexao.html">🔗 Conexão</a></li>
+      <li><a href="mensagens.html">💬 Mensagens</a></li>
+      <li><a href="contatos.html">👥 Contatos</a></li>
+      <li><a href="estatisticas.html">📊 Estatísticas</a></li>
+      <li><a href="config.html">⚙️ Configurações</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <h1>Conectar WhatsApp</h1>
+    <select id="connectMode">
+      <option value="qrcode">QR Code</option>
+      <option value="phone">Número (Phone Code)</option>
+    </select>
+    <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
+    <button onclick="connect()">Conectar</button>
+    <div id="qrContainer"></div>
+    <p id="connectStatus" class="status">⏳ Aguardando...</p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

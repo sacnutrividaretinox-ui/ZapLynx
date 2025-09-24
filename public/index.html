@@ -14,6 +14,10 @@
     img { margin-top: 10px; border-radius: 8px; }
     .stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 10px; }
     .stat { background: #0f172a; padding: 10px; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 6px; border-bottom: 1px solid #334155; font-size: 13px; text-align: left; }
+    .success { color: #22c55e; font-weight: bold; }
+    .fail { color: #ef4444; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -52,6 +56,17 @@
       <div class="stat">⏳ Pendentes: <span id="statPending">0</span></div>
       <div class="stat">❌ Falhas: <span id="statFail">0</span></div>
     </div>
+  </div>
+
+  <!-- Histórico -->
+  <div class="card">
+    <h3>📜 Histórico de Mensagens</h3>
+    <table>
+      <thead>
+        <tr><th>Telefone</th><th>Mensagem</th><th>Status</th><th>Data/Hora</th></tr>
+      </thead>
+      <tbody id="historyTable"></tbody>
+    </table>
   </div>
 
   <script>
@@ -103,6 +118,7 @@
       });
       const data = await res.json();
       document.getElementById("sendStatus").innerText = data.success ? "✅ Enviado!" : "❌ Erro ao enviar.";
+      loadHistory();
     }
 
     async function loadStats() {
@@ -113,8 +129,31 @@
       document.getElementById("statPending").innerText = data.pending;
       document.getElementById("statFail").innerText = data.fail;
     }
-    setInterval(loadStats, 3000);
+
+    async function loadHistory() {
+      const res = await fetch("/api/history");
+      const data = await res.json();
+      const tbody = document.getElementById("historyTable");
+      tbody.innerHTML = "";
+      data.forEach(log => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${log.phone}</td>
+          <td>${log.message}</td>
+          <td class="${log.status === "success" ? "success" : "fail"}">${log.status}</td>
+          <td>${log.time}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    setInterval(() => {
+      loadStats();
+      loadHistory();
+    }, 3000);
+
     loadStats();
+    loadHistory();
   </script>
 </body>
 </html>

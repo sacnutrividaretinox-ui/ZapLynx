@@ -18,6 +18,7 @@ const ZAPI = {
 // 📊 Estatísticas
 // =============================
 let stats = { total: 0, success: 0, fail: 0, pending: 0 };
+let history = []; // Histórico de mensagens enviadas
 
 // ✅ Conectar via QR Code
 app.get("/api/qrcode", async (req, res) => {
@@ -58,21 +59,37 @@ app.post("/api/send", async (req, res) => {
     const response = await axios.post(
       `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/send-text`,
       { phone, message },
-      { headers: { "Client-Token": ZAPI.clientToken } }
-    );
+      { headers: { "Client-Token": ZAPI.clientToken }
+    });
 
     stats.pending--;
+    const log = {
+      phone,
+      message,
+      status: "success",
+      time: new Date().toLocaleString("pt-BR")
+    };
 
     if (response.data?.messageId) {
       stats.success++;
+      history.unshift(log); // adiciona no topo
       return res.json({ success: true, response: response.data });
     } else {
       stats.fail++;
+      log.status = "fail";
+      history.unshift(log);
       return res.status(400).json({ success: false, response: response.data });
     }
   } catch (err) {
     stats.pending--;
     stats.fail++;
+    const log = {
+      phone: req.body.phone,
+      message: req.body.message,
+      status: "fail",
+      time: new Date().toLocaleString("pt-BR")
+    };
+    history.unshift(log);
     console.error("Erro envio:", err.response?.data || err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
@@ -80,6 +97,9 @@ app.post("/api/send", async (req, res) => {
 
 // ✅ Estatísticas
 app.get("/api/stats", (req, res) => res.json(stats));
+
+// ✅ Histórico
+app.get("/api/history", (req, res) => res.json(history.slice(0, 20))); // retorna últimos 20
 
 // 🚀 Start
 const PORT = process.env.PORT || 8080;

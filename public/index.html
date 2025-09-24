@@ -8,23 +8,22 @@
 </head>
 <body>
   <div class="container">
-    <h1>ZapLynx 🚀</h1>
+    <h1 class="title">ZapLynx 🚀</h1>
 
-    <!-- Conectar WhatsApp via QR Code -->
+    <!-- Conectar WhatsApp -->
     <div class="card">
-      <h2>Conectar WhatsApp via QR Code</h2>
-      <button id="btn-qr">Gerar QR Code</button>
-      <p id="qr-status"></p>
-      <img id="qr-image" style="display:none; max-width:250px; margin-top:10px;" />
+      <h3>Conectar WhatsApp via QR Code</h3>
+      <button onclick="gerarQRCode()">Gerar QR Code</button>
+      <div id="qr-container" style="margin-top:10px;"></div>
     </div>
 
     <!-- Enviar Mensagem -->
     <div class="card">
-      <h2>Enviar Mensagem</h2>
-      <input id="phone" type="text" placeholder="Número (com DDI/DDD)" />
-      <textarea id="message" placeholder="Digite sua mensagem"></textarea>
-      <button id="btn-send">Enviar</button>
-      <p id="send-status"></p>
+      <h3>Enviar Mensagem</h3>
+      <input type="text" id="numero" placeholder="Número (com DDI/DDD)" />
+      <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
+      <button onclick="enviarMensagem()">Enviar</button>
+      <div id="status-envio" style="margin-top:10px;"></div>
     </div>
   </div>
 

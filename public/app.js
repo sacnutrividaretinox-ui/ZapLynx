@@ -14,8 +14,7 @@ document.getElementById("generateQrBtn")?.addEventListener("click", async () => 
     const data = await res.json();
 
     if (data.qrCode) {
-      // ✅ monta imagem base64 corretamente
-      qrImage.src = `data:image/png;base64,${data.qrCode}`;
+      qrImage.src = data.qrCode; // 🚀 já vem pronto do back
       qrImage.style.display = "block";
       qrStatus.innerText = "QR Code gerado com sucesso!";
       qrStatus.style.color = "#22c55e";
@@ -56,7 +55,7 @@ document.getElementById("sendForm")?.addEventListener("submit", async (e) => {
       sendStatus.innerText = "Mensagem enviada!";
       sendStatus.style.color = "#22c55e";
       document.getElementById("sendForm").reset();
-      loadHistory(); // recarrega histórico
+      loadHistory();
     }
   } catch (err) {
     sendStatus.innerText = `Erro: ${err.message}`;
@@ -99,5 +98,5 @@ async function loadHistory() {
 
 document.getElementById("refreshHistoryBtn")?.addEventListener("click", loadHistory);
 
-// carregar histórico automaticamente ao abrir
+// carregar histórico automaticamente
 loadHistory();

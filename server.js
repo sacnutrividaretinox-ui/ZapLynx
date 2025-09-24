@@ -5,7 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const path = require("path");
-const db = require("./db"); // importa SQLite (better-sqlite3)
+const db = require("./db"); // SQLite (better-sqlite3)
 
 const app = express();
 app.use(cors());
@@ -49,7 +49,11 @@ app.get("/api/qr", async (req, res) => {
     });
 
     if (response.data?.value) {
-      res.json({ qrCode: response.data.value });
+      // 🚀 retorna base64 com prefixo pronto
+      res.json({ qrCode: `data:image/png;base64,${response.data.value}` });
+    } else if (response.data?.url) {
+      // 🚀 algumas versões da Z-API retornam link pronto
+      res.json({ qrCode: response.data.url });
     } else {
       res.status(500).json({
         error: "QR Code não retornado pela Z-API",
@@ -70,19 +74,16 @@ app.post("/api/send-message", async (req, res) => {
   try {
     const { phone, message } = req.body;
 
-    // salvar no banco
     db.prepare(
       "INSERT INTO messages (phone, message, status) VALUES (?, ?, ?)"
     ).run(phone, message, "pending");
 
-    // enviar via Z-API
     const response = await axios.post(
       `${ZAPI.baseUrl()}/send-text`,
       { phone, message },
       { headers: { "Client-Token": ZAPI.clientToken } }
     );
 
-    // atualizar status no banco
     db.prepare(
       "UPDATE messages SET status = ? WHERE phone = ? AND message = ?"
     ).run("sent", phone, message);
@@ -97,7 +98,7 @@ app.post("/api/send-message", async (req, res) => {
   }
 });
 
-// Histórico de mensagens
+// Histórico
 app.get("/api/messages", (req, res) => {
   try {
     const rows = db.prepare("SELECT * FROM messages ORDER BY created_at DESC").all();

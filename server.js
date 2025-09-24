@@ -8,8 +8,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // serve arquivos da pasta public
 
-// 🔑 Variáveis de ambiente (Railway > Variables)
-const { ZAPI_INSTANCE_ID, ZAPI_TOKEN, ZAPI_MODE } = process.env;
+// 🔑 Variáveis do Railway (.env)
+const { ZAPI_INSTANCE_ID, ZAPI_TOKEN, ZAPI_CLIENT_TOKEN, ZAPI_MODE } = process.env;
 
 // Função para montar a URL correta da API Z-API
 function getZapiUrl(type) {
@@ -25,16 +25,25 @@ function getZapiUrl(type) {
   return null;
 }
 
+// Config padrão do axios para enviar client-token
+function getAxiosConfig() {
+  return {
+    headers: {
+      "client-token": ZAPI_CLIENT_TOKEN || "",
+    },
+  };
+}
+
 // ✅ Rota para gerar QR Code
 app.get("/api/generate-qr", async (req, res) => {
   try {
     const url = getZapiUrl("qr");
     if (!url) throw new Error("URL de QR Code não encontrada (verifique ZAPI_MODE)");
 
-    const response = await axios.get(url);
+    const response = await axios.get(url, getAxiosConfig());
     console.log("Resposta QR:", response.data);
 
-    // Alguns retornam base64, outros URL de imagem
+    // Pode vir como base64 ou link
     let qrCode = response.data.qrCode || response.data.qr || response.data.image;
     if (qrCode && !qrCode.startsWith("data:image")) {
       qrCode = `data:image/png;base64,${qrCode}`;
@@ -60,7 +69,7 @@ app.get("/api/status", async (req, res) => {
     const url = getZapiUrl("status");
     if (!url) throw new Error("URL de Status não encontrada (verifique ZAPI_MODE)");
 
-    const response = await axios.get(url);
+    const response = await axios.get(url, getAxiosConfig());
     console.log("Resposta Status:", response.data);
 
     res.json(response.data);

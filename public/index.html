@@ -2,49 +2,94 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>ZapLynx</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZapLynx 🚀</title>
+  <style>
+    body { background:#0d1117; color:#e6edf3; font-family:Segoe UI, sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
+    h1 { color:#58a6ff; margin-bottom:20px; }
+    .card { background:#161b22; padding:20px; border-radius:12px; margin:10px 0; width:100%; max-width:450px; box-shadow:0 4px 8px rgba(0,0,0,0.5); }
+    .card h2 { margin-bottom:10px; color:#79c0ff; }
+    input, select, textarea { width:100%; padding:10px; margin:5px 0; border:none; border-radius:8px; background:#0d1117; color:#e6edf3; }
+    button { background:#238636; color:white; border:none; padding:10px; width:100%; margin-top:8px; border-radius:8px; cursor:pointer; font-weight:bold; }
+    button:hover { background:#2ea043; }
+    img { max-width:200px; margin:15px auto; display:block; border:2px solid #30363d; border-radius:8px; }
+    p { font-size:14px; margin-top:8px; color:#8b949e; text-align:center; }
+  </style>
 </head>
 <body>
-  <h1>🚀 ZapLynx</h1>
+  <h1>ZapLynx 🚀</h1>
 
   <div class="card">
     <h2>Conectar WhatsApp</h2>
-    <select id="modoConexao" onchange="alternarModo()">
-      <option value="qr">QR Code</option>
-      <option value="numero">Número (Pairing Code)</option>
+    <select id="connectMode">
+      <option value="qrcode">QR Code</option>
+      <option value="number">Número (Pairing Code)</option>
     </select>
-
-    <div id="qrSection">
-      <button onclick="gerarQRCode()">Gerar QR Code</button>
-      <p id="status">Aguardando ação...</p>
-      <img id="qrcodeImg" width="250">
-    </div>
-
-    <div id="numeroSection" style="display:none;">
-      <input id="phoneInput" placeholder="Número com DDI/DDD">
-      <button onclick="conectarNumero()">Conectar</button>
-      <p id="statusNumero">Aguardando ação...</p>
-    </div>
+    <input type="text" id="phoneInput" placeholder="Digite o número (com DDI/DD)" style="display:none">
+    <button onclick="connect()">Conectar</button>
+    <div id="qrContainer"></div>
+    <p id="connectStatus">Aguardando ação...</p>
   </div>
 
   <div class="card">
     <h2>Enviar Mensagem</h2>
-    <input id="msgPhone" placeholder="Número com DDI/DDD">
+    <input type="text" id="msgPhone" placeholder="Número (com DDI/DD)">
     <textarea id="msgText" placeholder="Digite sua mensagem"></textarea>
-    <button onclick="enviarMensagem()">Enviar</button>
-    <p id="statusMsg">Aguardando envio...</p>
+    <button onclick="sendMessage()">Enviar</button>
+    <p id="msgStatus">Aguardando envio...</p>
   </div>
 
-  <script src="app.js"></script>
   <script>
-    function alternarModo() {
-      const modo = document.getElementById("modoConexao").value;
-      document.getElementById("qrSection").style.display =
-        modo === "qr" ? "block" : "none";
-      document.getElementById("numeroSection").style.display =
-        modo === "numero" ? "block" : "none";
+    async function connect() {
+      const mode = document.getElementById("connectMode").value;
+      const phone = document.getElementById("phoneInput").value;
+      const status = document.getElementById("connectStatus");
+      const qrDiv = document.getElementById("qrContainer");
+
+      status.textContent = "Conectando...";
+      qrDiv.innerHTML = "";
+
+      if (mode === "qrcode") {
+        const res = await fetch("/api/qrcode");
+        const data = await res.json();
+        if (data.qr) {
+          const img = document.createElement("img");
+          img.src = data.qr;
+          qrDiv.appendChild(img);
+          status.textContent = "QR Code gerado!";
+        } else {
+          status.textContent = "Erro ao gerar QR Code.";
+        }
+      } else {
+        const res = await fetch("/api/connect-number", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({ phone })
+        });
+        const data = await res.json();
+        status.textContent = data.error ? "Erro ao conectar pelo número" : "Conectado pelo número!";
+      }
     }
+
+    async function sendMessage() {
+      const phone = document.getElementById("msgPhone").value;
+      const message = document.getElementById("msgText").value;
+      const status = document.getElementById("msgStatus");
+
+      status.textContent = "Enviando...";
+      const res = await fetch("/api/send", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ phone, message })
+      });
+      const data = await res.json();
+      status.textContent = data.error ? "Erro ao enviar" : "Mensagem enviada!";
+    }
+
+    // Troca visibilidade input quando mudar opção
+    document.getElementById("connectMode").addEventListener("change", e => {
+      document.getElementById("phoneInput").style.display = e.target.value === "number" ? "block" : "none";
+    });
   </script>
 </body>
 </html>

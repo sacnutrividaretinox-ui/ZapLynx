@@ -40,7 +40,7 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
 });
 
-// QR Code
+// 📌 QR CODE (com debug)
 app.get("/api/qr", async (req, res) => {
   try {
     const urls = [
@@ -65,11 +65,12 @@ app.get("/api/qr", async (req, res) => {
     if (!data) return res.status(500).json({ error: "Nenhum QR retornado" });
 
     let qrCode = data.value || data.base64 || data.qrCode || data.url;
+
     if (!qrCode) {
-      return res.status(500).json({ error: "Formato de QR desconhecido", raw: data });
+      console.log("🔍 QR Code bruto da Z-API:", data);
+      return res.json({ debug: true, raw: data });
     }
 
-    // Se vier só base64, força formato de imagem
     if (!qrCode.startsWith("data:image") && !qrCode.startsWith("http")) {
       qrCode = `data:image/png;base64,${qrCode}`;
     }
@@ -80,7 +81,7 @@ app.get("/api/qr", async (req, res) => {
   }
 });
 
-// Conectar pelo número
+// 📌 Conectar pelo número (com debug)
 app.post("/api/connect-number", async (req, res) => {
   try {
     const { number } = req.body;
@@ -88,7 +89,8 @@ app.post("/api/connect-number", async (req, res) => {
 
     const endpoints = [
       `${ZAPI.baseUrl()}/connect/phone`,
-      `${ZAPI.baseUrl()}/start-session`
+      `${ZAPI.baseUrl()}/start-session`,
+      `${ZAPI.baseUrl()}/start`
     ];
 
     let response;
@@ -100,6 +102,7 @@ app.post("/api/connect-number", async (req, res) => {
         });
         if (response.data) break;
       } catch (err) {
+        console.log(`❌ Falhou em ${url}:`, err.response?.data || err.message);
         continue;
       }
     }

@@ -1,18 +1,12 @@
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  margin: 0;
-  padding: 20px;
-  transition: background 0.3s, color 0.3s;
-}
-
+/* Logo */
 .logo {
   max-width: 220px;
   margin: 20px auto;
   display: block;
-  filter: drop-shadow(0 0 8px #ff0000); /* efeito na cor da fonte */
+  filter: drop-shadow(0 0 8px #ff0000); /* cor da fonte */
 }
 
+/* Botão de alternância */
 button#toggleTheme {
   margin-bottom: 20px;
   padding: 10px 20px;
@@ -28,23 +22,9 @@ body.dark {
   color: #fff;
 }
 
-body.dark .card {
-  background: #161b22;
-  color: #fff;
-}
-
 body.dark h1, 
 body.dark .card h2 {
   color: #ff0000;
-}
-
-body.dark button {
-  background: #2ea043;
-  color: #fff;
-}
-
-body.dark button:hover {
-  background: #238636;
 }
 
 body.dark #toggleTheme {
@@ -67,15 +47,6 @@ body.white .card {
 body.white h1, 
 body.white .card h2 {
   color: #ff0000;
-}
-
-body.white button {
-  background: #2ea043;
-  color: #fff;
-}
-
-body.white button:hover {
-  background: #238636;
 }
 
 body.white #toggleTheme {

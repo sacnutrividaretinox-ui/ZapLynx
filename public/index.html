@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZapLynx - Início</title>
+  <title>ZapLynx</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
@@ -12,61 +12,105 @@
   <aside class="sidebar">
     <img src="logo.png" alt="ZapLynx Logo" class="logo">
     <ul>
-      <li class="active">🏠 Início</li>
-      <li>🔗 Conexão</li>
-      <li>💬 Mensagens</li>
-      <li>👥 Contatos</li>
-      <li>📊 Estatísticas</li>
-      <li>⚙️ Configurações</li>
+      <li onclick="showTab('inicio')" class="active">🏠 Início</li>
+      <li onclick="showTab('conexao')">🔗 Conexão</li>
+      <li onclick="showTab('mensagem')">💬 Mensagens</li>
+      <li onclick="showTab('contatos')">👥 Contatos</li>
+      <li onclick="showTab('estatisticas')">📊 Estatísticas</li>
+      <li onclick="showTab('config')">⚙️ Configurações</li>
     </ul>
   </aside>
 
   <!-- Main Content -->
   <main>
-    <header>
-      <h1>Início</h1>
-      <p>Bem-vindo ao seu painel ZapLynx 🚀</p>
-    </header>
+    <!-- Início -->
+    <section id="inicio" class="tab active">
+      <header>
+        <h1>Início</h1>
+        <p>Bem-vindo ao seu painel ZapLynx 🚀</p>
+      </header>
 
-    <!-- Cards de estatísticas -->
-    <section class="cards">
-      <div class="card">
-        <h3>📩 Hoje</h3>
-        <p id="statHoje">0</p>
-      </div>
-      <div class="card">
-        <h3>📊 Semana</h3>
-        <p id="statSemana">0</p>
-      </div>
-      <div class="card">
-        <h3>📆 Mês</h3>
-        <p id="statMes">0</p>
-      </div>
-      <div class="card">
-        <h3>👥 Contatos</h3>
-        <p id="statContatos">0</p>
-      </div>
+      <!-- Cards de estatísticas -->
+      <section class="cards">
+        <div class="card"><h3>📩 Hoje</h3><p id="statHoje">0</p></div>
+        <div class="card"><h3>📊 Semana</h3><p id="statSemana">0</p></div>
+        <div class="card"><h3>📆 Mês</h3><p id="statMes">0</p></div>
+        <div class="card"><h3>👥 Contatos</h3><p id="statContatos">0</p></div>
+      </section>
+
+      <!-- Gráfico -->
+      <section class="chart">
+        <h2>Mensagens enviadas</h2>
+        <canvas id="chartMsgs"></canvas>
+      </section>
+
+      <!-- Histórico -->
+      <section class="history">
+        <h2>Histórico recente</h2>
+        <ul id="historyList">
+          <li>⏳ Nenhuma atividade ainda...</li>
+        </ul>
+      </section>
     </section>
 
-    <!-- Gráfico -->
-    <section class="chart">
-      <h2>Mensagens enviadas</h2>
-      <canvas id="chartMsgs"></canvas>
+    <!-- Conexão -->
+    <section id="conexao" class="tab">
+      <h2>Conectar WhatsApp</h2>
+      <select id="connectMode">
+        <option value="qrcode">QR Code</option>
+        <option value="phone">Número (Phone Code)</option>
+      </select>
+      <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
+      <button onclick="connect()">Conectar</button>
+      <div id="qrContainer"></div>
+      <p id="connectStatus" class="status">⏳ Aguardando...</p>
     </section>
 
-    <!-- Histórico -->
-    <section class="history">
-      <h2>Histórico recente</h2>
-      <ul id="historyList">
-        <li>⏳ Nenhuma atividade ainda...</li>
-      </ul>
+    <!-- Mensagens -->
+    <section id="mensagem" class="tab">
+      <h2>Enviar Mensagem</h2>
+      <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
+      <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
+      <button onclick="sendMessage()">Enviar</button>
+      <p id="sendStatus" class="status">⏳ Aguardando...</p>
+    </section>
+
+    <!-- Contatos -->
+    <section id="contatos" class="tab">
+      <h2>Contatos</h2>
+      <input type="file" id="uploadCSV">
+      <div id="listaContatos"></div>
+    </section>
+
+    <!-- Estatísticas -->
+    <section id="estatisticas" class="tab">
+      <h2>Estatísticas avançadas</h2>
+      <p>🔧 Em breve gráficos detalhados de mensagens.</p>
+    </section>
+
+    <!-- Configurações -->
+    <section id="config" class="tab">
+      <h2>Configurações</h2>
+      <label>
+        <input type="checkbox" id="toggleTheme">
+        🌙 Tema Dark/White
+      </label>
     </section>
   </main>
 
+  <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Gráfico de mensagens (exemplo)
-    new Chart(document.getElementById('chartMsgs'), {
+    // Função para trocar abas
+    function showTab(id) {
+      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+      document.querySelectorAll(".sidebar li").forEach(li => li.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      event.target.classList.add("active");
+    }
+
+    // Gráfico de mensagens
+    const chart = new Chart(document.getElementById('chartMsgs'), {
       type: 'line',
       data: {
         labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
@@ -80,6 +124,47 @@
         }]
       }
     });
+
+    // Atualizar histórico quando enviar mensagem
+    async function sendMessage() {
+      const phone = document.getElementById("sendPhone").value.trim();
+      const message = document.getElementById("sendMessage").value.trim();
+      const sendStatus = document.getElementById("sendStatus");
+
+      if (!phone || !message) {
+        sendStatus.innerText = "⚠️ Preencha número e mensagem!";
+        return;
+      }
+
+      sendStatus.innerText = "⏳ Enviando...";
+      try {
+        const res = await fetch("/api/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, message })
+        });
+        const data = await res.json();
+        if (data?.id) {
+          sendStatus.innerText = "✅ Mensagem enviada!";
+          addHistory(`📤 Enviado para ${phone}: "${message}"`);
+        } else {
+          sendStatus.innerText = "⚠️ Erro ao enviar.";
+        }
+      } catch (err) {
+        sendStatus.innerText = "❌ Erro de conexão.";
+      }
+    }
+
+    // Adiciona item ao histórico
+    function addHistory(text) {
+      const list = document.getElementById("historyList");
+      if (list.children[0]?.innerText.includes("Nenhuma")) {
+        list.innerHTML = "";
+      }
+      const li = document.createElement("li");
+      li.innerText = text;
+      list.prepend(li);
+    }
   </script>
 </body>
 </html>

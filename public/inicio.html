@@ -12,7 +12,7 @@
   <aside class="sidebar">
     <img src="logo.png" alt="ZapLynx Logo" class="logo">
     <ul>
-      <li class="active"><a href="inicio.html">🏠 Início</a></li>
+      <li class="active"><a href="index.html">🏠 Início</a></li>
       <li><a href="conexao.html">🔗 Conexão</a></li>
       <li><a href="mensagens.html">💬 Mensagens</a></li>
       <li><a href="contatos.html">👥 Contatos</a></li>
@@ -28,6 +28,7 @@
       <p>Bem-vindo ao seu painel ZapLynx 🚀</p>
     </header>
 
+    <!-- Cards -->
     <section class="cards">
       <div class="card"><h3>📩 Hoje</h3><p id="statHoje">0</p></div>
       <div class="card"><h3>📊 Semana</h3><p id="statSemana">0</p></div>
@@ -35,11 +36,13 @@
       <div class="card"><h3>👥 Contatos</h3><p id="statContatos">0</p></div>
     </section>
 
+    <!-- Gráfico -->
     <section class="chart">
       <h2>Mensagens enviadas</h2>
       <canvas id="chartMsgs"></canvas>
     </section>
 
+    <!-- Histórico -->
     <section class="history">
       <h2>Histórico recente</h2>
       <ul id="historyList">
@@ -48,8 +51,10 @@
     </section>
   </main>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    // Exemplo de gráfico inicial
     new Chart(document.getElementById('chartMsgs'), {
       type: 'line',
       data: {

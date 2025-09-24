@@ -19,13 +19,13 @@
     <!-- Sidebar -->
     <aside id="sidebar">
       <nav>
-        <a href="#status" class="nav-link">Status</a>
-        <a href="#contatos" class="nav-link">Contatos</a>
-        <a href="#mensagem" class="nav-link">Mensagem</a>
+        <a href="#inicio" class="nav-link">Início</a>
+        <a href="#dashboard" class="nav-link">Dashboard</a>
+        <a href="#meus-numeros" class="nav-link">Meus Números</a>
+        <a href="#extrair-contatos" class="nav-link">Extrair Contatos</a>
+        <a href="#perfil" class="nav-link">Perfil</a>
+        <a href="#historico" class="nav-link">Histórico</a>
         <a href="#templates" class="nav-link">Templates</a>
-        <a href="#preview" class="nav-link">Prévia</a>
-        <a href="#resposta" class="nav-link">Logs / Histórico</a>
-        <a href="#qrcode" class="nav-link">Conectar WhatsApp</a>
       </nav>
     </aside>
 
@@ -34,62 +34,44 @@
 
     <!-- Conteúdo principal -->
     <main>
-      <!-- STATUS -->
-      <section id="status" class="card">
-        <h2>Status da Conexão</h2>
-        <div class="status-row">
-          <div id="statusText">Carregando status…</div>
-          <button id="refreshStatus" class="btn">Atualizar</button>
-        </div>
+      <!-- INÍCIO -->
+      <section id="inicio" class="card">
+        <h2>Início</h2>
+        <p>Bem-vindo ao seu Micro-SaaS de WhatsApp 🚀</p>
       </section>
 
-      <!-- CONTATOS -->
-      <section id="contatos" class="card">
-        <h2>Upload de Contatos (CSV)</h2>
-        <div class="row">
-          <input type="file" id="fileInput" accept=".csv" />
-          <button id="clearContacts" class="btn btn-ghost">Limpar</button>
-        </div>
-        <div class="table-wrap">
-          <table id="contactsTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Telefone</th>
-                <th>Nome</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="row">
-          <label for="bulkDelay">Delay entre envios (ms)</label>
-          <input id="bulkDelay" type="number" min="0" step="250" value="1500" />
-        </div>
-        <div class="row">
-          <button id="sendBulk" class="btn">Enviar em Massa</button>
-        </div>
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="card">
+        <h2>Dashboard</h2>
+        <p>Aqui você verá estatísticas e métricas principais.</p>
       </section>
 
-      <!-- MENSAGEM -->
-      <section id="mensagem" class="card">
-        <h2>Enviar Mensagem</h2>
-        <div class="grid-2">
-          <div>
-            <label for="phone">Número (com DDI/DDD)</label>
-            <input type="tel" id="phone" placeholder="Ex: 5591999999999" />
-          </div>
-          <div>
-            <label for="singleDelay">Delay (ms) antes de enviar</label>
-            <input type="number" id="singleDelay" value="500" min="0" step="100" />
-          </div>
-        </div>
-        <label for="message">Mensagem</label>
-        <textarea id="message" rows="5" placeholder="Digite sua mensagem…"></textarea>
+      <!-- MEUS NÚMEROS -->
+      <section id="meus-numeros" class="card">
+        <h2>Meus Números</h2>
+        <p>Gerencie os números conectados à sua conta.</p>
+      </section>
+
+      <!-- EXTRAIR CONTATOS -->
+      <section id="extrair-contatos" class="card">
+        <h2>Extrair Contatos</h2>
+        <p>Ferramenta para capturar e importar contatos.</p>
+      </section>
+
+      <!-- PERFIL -->
+      <section id="perfil" class="card">
+        <h2>Perfil</h2>
+        <p>Gerencie suas informações pessoais e de login.</p>
+      </section>
+
+      <!-- HISTÓRICO -->
+      <section id="historico" class="card">
+        <h2>Histórico</h2>
+        <div id="history" class="history"></div>
+        <pre id="serverResponse" class="terminal"></pre>
         <div class="row">
-          <button id="sendBtn" class="btn">Enviar</button>
-          <button id="clearMsg" class="btn btn-ghost">Limpar</button>
+          <button id="clearHistory" class="btn btn-ghost">Limpar histórico</button>
+          <button id="exportHistory" class="btn">Exportar JSON</button>
         </div>
       </section>
 
@@ -112,38 +94,6 @@
           <button id="applyTpl" class="btn">Aplicar</button>
         </div>
       </section>
-
-      <!-- PRÉVIA -->
-      <section id="preview" class="card">
-        <h2>Prévia da Mensagem</h2>
-        <div id="previewText" class="preview">Sua mensagem aparecerá aqui…</div>
-      </section>
-
-      <!-- LOGS / HISTÓRICO -->
-      <section id="resposta" class="card">
-        <h2>Logs / Histórico</h2>
-        <div id="history" class="history"></div>
-        <pre id="serverResponse" class="terminal"></pre>
-        <div class="row">
-          <button id="clearHistory" class="btn btn-ghost">Limpar histórico</button>
-          <button id="exportHistory" class="btn">Exportar JSON</button>
-        </div>
-      </section>
-
-      <!-- QR CODE -->
-      <section id="qrcode" class="card">
-        <h2>Conectar WhatsApp</h2>
-        <div class="row">
-          <button id="generateQrBtn" class="btn">
-            <span class="spinner" id="qrSpin" hidden></span>
-            Gerar QR Code
-          </button>
-        </div>
-        <div id="qrStatus" class="muted">Aguardando ação…</div>
-        <div id="qrContainer">
-          <img id="qrImage" alt="QR Code" hidden />
-        </div>
-      </section>
     </main>
   </div>
 
@@ -152,9 +102,10 @@
     Feito para disparos controlados. Respeite o opt-in dos contatos.
   </footer>
 
+  <!-- Scripts -->
   <script src="app.js"></script>
   <script>
-    // Overlay close no mobile
+    // Sidebar + overlay responsivo
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const toggle = document.getElementById("menuToggle");

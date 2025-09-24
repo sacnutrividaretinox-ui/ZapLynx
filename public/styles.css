@@ -40,17 +40,22 @@ body{
 /* Layout */
 .layout{display:flex;flex:1;min-height:0}
 aside{
-  width:260px;background:var(--panel);padding:20px;
+  width:240px;background:var(--panel);padding:20px;
   border-right:1px solid #30363d;
   transition:transform .3s ease-in-out;
 }
+#sidebar nav{display:flex;flex-direction:column;gap:8px}
 #sidebar .nav-link{
-  display:block;padding:12px 14px;margin:8px 0;
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;
   border-radius:8px;text-decoration:none;
-  color:var(--text);font-size:16px;
+  color:var(--text);font-size:15px;font-weight:500;
+  transition:background .2s;
 }
 #sidebar .nav-link:hover{background:#21262d;color:var(--primary)}
+#sidebar .nav-link svg{flex-shrink:0;width:18px;height:18px;fill:currentColor}
 
+/* Main grid */
 main{
   flex:1;padding:24px;
   display:grid;

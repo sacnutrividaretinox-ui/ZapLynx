@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const path = require("path");
-const db = require("./db"); // SQLite
+const db = require("./db");
 
 const app = express();
 app.use(cors());
@@ -17,87 +17,77 @@ const ZAPI = {
   }
 };
 
-// Servir front
 app.use(express.static(path.join(__dirname, "public")));
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
-// Status
-app.get("/api/status", (req, res) => {
-  res.json({ status: "ok", message: "Micro SaaS rodando 🚀" });
-});
-
-// QR Code
+// ============================
+// 📌 QR CODE (tenta todas as opções possíveis)
+// ============================
 app.get("/api/qr", async (req, res) => {
   try {
-    const response = await axios.get(`${ZAPI.baseUrl()}/qr-code/image`, {
-      headers: { "Client-Token": ZAPI.clientToken }
-    });
+    const urls = [
+      `${ZAPI.baseUrl()}/qr-code/image`,
+      `${ZAPI.baseUrl()}/qr-code`
+    ];
 
-    if (response.data?.value) {
-      let qrCode = response.data.value;
-      if (!qrCode.startsWith("data:image")) {
-        qrCode = `data:image/png;base64,${qrCode}`;
+    let response;
+    for (let url of urls) {
+      try {
+        response = await axios.get(url, {
+          headers: { "Client-Token": ZAPI.clientToken },
+          timeout: 10000
+        });
+        if (response.data) break;
+      } catch (err) {
+        continue;
       }
-      res.json({ qrCode });
-    } else if (response.data?.url) {
-      res.json({ qrCode: response.data.url });
-    } else {
-      res.status(500).json({ error: "QR Code não retornado", raw: response.data });
     }
+
+    const data = response?.data;
+    if (!data) return res.status(500).json({ error: "Nenhum QR retornado" });
+
+    let qrCode = data.value || data.base64 || data.qrCode || data.url;
+    if (!qrCode) return res.status(500).json({ error: "Formato de QR desconhecido", raw: data });
+
+    if (!qrCode.startsWith("data:image") && !qrCode.startsWith("http")) {
+      qrCode = `data:image/png;base64,${qrCode}`;
+    }
+
+    res.json({ qrCode });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao gerar QR Code", details: err.message });
+    res.status(500).json({ error: "Erro ao gerar QR", details: err.message });
   }
 });
 
-// Conectar pelo número
+// ============================
+// 📌 Conectar pelo número
+// ============================
 app.post("/api/connect-number", async (req, res) => {
   try {
     const { number } = req.body;
     if (!number) return res.status(400).json({ error: "Número é obrigatório" });
 
-    const response = await axios.post(
-      `${ZAPI.baseUrl()}/connect/phone`, // ajuste se sua versão usar outro endpoint
-      { phone: number },
-      { headers: { "Client-Token": ZAPI.clientToken } }
-    );
+    const endpoints = [
+      `${ZAPI.baseUrl()}/connect/phone`,
+      `${ZAPI.baseUrl()}/start-session`
+    ];
 
+    let response;
+    for (let url of endpoints) {
+      try {
+        response = await axios.post(url, { phone: number }, {
+          headers: { "Client-Token": ZAPI.clientToken },
+          timeout: 10000
+        });
+        if (response.data) break;
+      } catch (err) {
+        continue;
+      }
+    }
+
+    if (!response) return res.status(500).json({ error: "Nenhum endpoint funcionou" });
     res.json(response.data);
   } catch (err) {
-    res.status(500).json({ error: "Erro ao conectar pelo número", details: err.message });
+    res.status(500).json({ error: "Erro ao conectar", details: err.message });
   }
 });
-
-// Enviar mensagem
-app.post("/api/send-message", async (req, res) => {
-  try {
-    const { phone, message } = req.body;
-
-    db.prepare("INSERT INTO messages (phone, message, status) VALUES (?, ?, ?)").run(phone, message, "pending");
-
-    const response = await axios.post(
-      `${ZAPI.baseUrl()}/send-text`,
-      { phone, message },
-      { headers: { "Client-Token": ZAPI.clientToken } }
-    );
-
-    db.prepare("UPDATE messages SET status = ? WHERE phone = ? AND message = ?").run("sent", phone, message);
-    res.json(response.data);
-  } catch (err) {
-    res.status(500).json({ error: err.message, details: err.response?.data || null });
-  }
-});
-
-// Histórico
-app.get("/api/messages", (req, res) => {
-  try {
-    const rows = db.prepare("SELECT * FROM messages ORDER BY created_at DESC").all();
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));

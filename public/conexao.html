@@ -2,74 +2,70 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Conexão</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>ZapLynx - Conexão</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #111; color: #fff; font-family: Arial, sans-serif; }
+    .container { max-width: 500px; margin: 50px auto; padding: 20px; background: #1e1e1e; border-radius: 10px; text-align: center; }
+    h2 { margin-bottom: 20px; }
+    button { background: red; color: #fff; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+    button:hover { background: #c00; }
+    img { margin-top: 20px; max-width: 300px; }
+    .status { margin-top: 15px; font-weight: bold; }
+    .ok { color: lime; }
+    .error { color: red; }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h2>Conexão</h2>
-
-    <!-- QR CODE -->
-    <div class="card">
-      <h3>🔑 Conectar via QR Code</h3>
-      <button id="btnQr" class="btn-red">Gerar QR Code</button>
-      <div id="qrResult" class="result">Nenhum QR retornado</div>
+    <h2>🔗 Conectar via QR Code</h2>
+    <button onclick="gerarQRCode()">Gerar QR Code</button>
+    <div id="qrcodeArea">
+      <p id="qrcodeMsg" class="error">Nenhum QR retornado</p>
     </div>
-
-    <!-- CONECTAR NÚMERO -->
-    <div class="card">
-      <h3>📞 Conectar com número</h3>
-      <input type="text" id="phone" placeholder="5599999999999" />
-      <button id="btnConnectNumber" class="btn-red">Conectar Número</button>
-      <div id="statusResult" class="result">Não conectado</div>
-    </div>
+    <div class="status" id="status">⏳ Aguardando...</div>
   </div>
 
   <script>
-    // Gerar QR Code
-    document.getElementById("btnQr").addEventListener("click", async () => {
+    async function gerarQRCode() {
+      document.getElementById("qrcodeMsg").innerText = "⏳ Gerando QR Code...";
+      document.getElementById("qrcodeMsg").className = "";
+
       try {
-        const response = await fetch("/api/qrcode");
-        const data = await response.json();
+        const res = await fetch("/api/qrcode");
+        const data = await res.json();
 
         if (data.qr) {
-          document.getElementById("qrResult").innerHTML =
-            `<img src="${data.qr}" alt="QR Code" width="250"/>`;
+          document.getElementById("qrcodeArea").innerHTML =
+            `<img src="data:image/png;base64,${data.qr}" alt="QR Code">`;
+          checarStatus();
         } else {
-          document.getElementById("qrResult").innerText = "❌ Nenhum QR retornado";
+          document.getElementById("qrcodeMsg").innerText = "❌ Erro ao gerar QR Code";
+          document.getElementById("qrcodeMsg").className = "error";
         }
       } catch (err) {
-        document.getElementById("qrResult").innerText = "❌ Erro ao gerar QR Code";
+        document.getElementById("qrcodeMsg").innerText = "❌ Erro de conexão";
+        document.getElementById("qrcodeMsg").className = "error";
         console.error(err);
       }
-    });
+    }
 
-    // Conectar Número
-    document.getElementById("btnConnectNumber").addEventListener("click", async () => {
-      const phone = document.getElementById("phone").value.trim();
-      if (!phone) {
-        alert("Digite um número válido!");
-        return;
-      }
-
+    async function checarStatus() {
       try {
-        const response = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, message: "🔗 Teste de conexão ZapLynx" })
-        });
-
-        const data = await response.json();
-        if (data.error) {
-          document.getElementById("statusResult").innerText = "❌ Não conectado";
+        const res = await fetch("/api/status");
+        const data = await res.json();
+        if (data.connected) {
+          document.getElementById("status").innerText = "✅ Conectado!";
+          document.getElementById("status").className = "status ok";
         } else {
-          document.getElementById("statusResult").innerText = "✅ Número conectado: " + phone;
+          document.getElementById("status").innerText = "❌ Não conectado";
+          document.getElementById("status").className = "status error";
         }
       } catch (err) {
-        document.getElementById("statusResult").innerText = "❌ Erro ao conectar número";
-        console.error(err);
+        document.getElementById("status").innerText = "⚠️ Erro ao verificar status";
+        document.getElementById("status").className = "status error";
       }
-    });
+    }
   </script>
 </body>
 </html>

@@ -1,4 +1,6 @@
-// Gerar QR Code
+// ============================
+// 📌 Gerar QR Code
+// ============================
 document.getElementById("generateQrBtn")?.addEventListener("click", async () => {
   const qrImage = document.getElementById("qrImage");
   const qrStatus = document.getElementById("qrStatus");
@@ -12,6 +14,7 @@ document.getElementById("generateQrBtn")?.addEventListener("click", async () => 
     const data = await res.json();
 
     if (data.qrCode) {
+      // ✅ monta imagem base64 corretamente
       qrImage.src = `data:image/png;base64,${data.qrCode}`;
       qrImage.style.display = "block";
       qrStatus.innerText = "QR Code gerado com sucesso!";
@@ -26,7 +29,9 @@ document.getElementById("generateQrBtn")?.addEventListener("click", async () => 
   }
 });
 
-// Enviar mensagem
+// ============================
+// 📌 Enviar mensagem
+// ============================
 document.getElementById("sendForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const phone = document.getElementById("phone").value;
@@ -51,7 +56,7 @@ document.getElementById("sendForm")?.addEventListener("submit", async (e) => {
       sendStatus.innerText = "Mensagem enviada!";
       sendStatus.style.color = "#22c55e";
       document.getElementById("sendForm").reset();
-      loadHistory();
+      loadHistory(); // recarrega histórico
     }
   } catch (err) {
     sendStatus.innerText = `Erro: ${err.message}`;
@@ -59,7 +64,9 @@ document.getElementById("sendForm")?.addEventListener("submit", async (e) => {
   }
 });
 
-// Carregar histórico
+// ============================
+// 📌 Carregar histórico
+// ============================
 async function loadHistory() {
   const tbody = document.querySelector("#historyTable tbody");
   tbody.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";

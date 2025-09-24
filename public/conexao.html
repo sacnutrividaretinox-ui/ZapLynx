@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx - Conexão</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -10,7 +9,7 @@
   <aside class="sidebar">
     <img src="logo.png" class="logo">
     <ul>
-      <li><a href="inicio.html">🏠 Início</a></li>
+      <li><a href="index.html">🏠 Início</a></li>
       <li class="active"><a href="conexao.html">🔗 Conexão</a></li>
       <li><a href="mensagens.html">💬 Mensagens</a></li>
       <li><a href="contatos.html">👥 Contatos</a></li>
@@ -18,19 +17,31 @@
       <li><a href="config.html">⚙️ Configurações</a></li>
     </ul>
   </aside>
-
   <main>
-    <h1>Conectar WhatsApp</h1>
-    <select id="connectMode">
-      <option value="qrcode">QR Code</option>
-      <option value="phone">Número (Phone Code)</option>
-    </select>
-    <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
-    <button onclick="connect()">Conectar</button>
-    <div id="qrContainer"></div>
-    <p id="connectStatus" class="status">⏳ Aguardando...</p>
+    <h1>Conexão</h1>
+    <button onclick="gerarQRCode()">Gerar QR Code</button>
+    <div id="qrcodeArea"></div>
+    <hr>
+    <input id="phoneNumber" placeholder="Número com DDD">
+    <button onclick="conectarNumero()">Conectar Número</button>
+    <p id="statusNumero"></p>
   </main>
-
-  <script src="app.js"></script>
+  <script>
+    async function gerarQRCode() {
+      const res = await fetch("/api/generate-qr");
+      const data = await res.json();
+      document.getElementById("qrcodeArea").innerHTML =
+        `<img src="${data.qrCode}" style="max-width:200px;">`;
+    }
+    async function conectarNumero() {
+      const phone = document.getElementById("phoneNumber").value;
+      const res = await fetch("/api/connect-number", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      document.getElementById("statusNumero").innerText = data.phone ? "✅ Conectado" : "❌ Erro";
+    }
+  </script>
 </body>
 </html>

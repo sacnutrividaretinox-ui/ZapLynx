@@ -2,16 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx - Estatísticas</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="dashboard dark">
   <aside class="sidebar">
     <img src="logo.png" class="logo">
     <ul>
-      <li><a href="inicio.html">🏠 Início</a></li>
+      <li><a href="index.html">🏠 Início</a></li>
       <li><a href="conexao.html">🔗 Conexão</a></li>
       <li><a href="mensagens.html">💬 Mensagens</a></li>
       <li><a href="contatos.html">👥 Contatos</a></li>
@@ -19,24 +17,21 @@
       <li><a href="config.html">⚙️ Configurações</a></li>
     </ul>
   </aside>
-
   <main>
-    <h1>Estatísticas avançadas</h1>
-    <canvas id="chartAdvanced"></canvas>
+    <h1>Estatísticas</h1>
+    <canvas id="chartSemana"></canvas>
   </main>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    new Chart(document.getElementById('chartAdvanced'), {
-      type: 'bar',
-      data: {
-        labels: ['Janeiro', 'Fevereiro', 'Março'],
-        datasets: [{
-          label: 'Mensagens enviadas',
-          data: [100, 150, 200],
-          backgroundColor: '#ff0000'
-        }]
-      }
-    });
+    async function carregar() {
+      const res = await fetch("/api/stats");
+      const stats = await res.json();
+      new Chart(document.getElementById("chartSemana"), {
+        type: "bar",
+        data: { labels: stats.labels, datasets: [{ data: stats.data, backgroundColor: "#ff0000" }] }
+      });
+    }
+    carregar();
   </script>
 </body>
 </html>

@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx - Contatos</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -10,7 +9,7 @@
   <aside class="sidebar">
     <img src="logo.png" class="logo">
     <ul>
-      <li><a href="inicio.html">🏠 Início</a></li>
+      <li><a href="index.html">🏠 Início</a></li>
       <li><a href="conexao.html">🔗 Conexão</a></li>
       <li><a href="mensagens.html">💬 Mensagens</a></li>
       <li class="active"><a href="contatos.html">👥 Contatos</a></li>
@@ -18,13 +17,41 @@
       <li><a href="config.html">⚙️ Configurações</a></li>
     </ul>
   </aside>
-
   <main>
     <h1>Contatos</h1>
-    <input type="file" id="uploadCSV">
-    <div id="listaContatos"></div>
+    <input id="nomeContato" placeholder="Nome">
+    <input id="numeroContato" placeholder="Número">
+    <button onclick="adicionarContato()">Salvar</button>
+    <hr>
+    <input type="file" id="uploadCSV" accept=".csv">
+    <button onclick="importarCSV()">Importar CSV</button>
+    <hr>
+    <ul id="listaContatos"></ul>
   </main>
-
-  <script src="app.js"></script>
+  <script>
+    async function carregarContatos() {
+      const res = await fetch("/api/contatos");
+      const contatos = await res.json();
+      const lista = document.getElementById("listaContatos");
+      lista.innerHTML = contatos.map(c => `<li>${c.nome} - ${c.numero}</li>`).join("");
+    }
+    async function adicionarContato() {
+      const nome = document.getElementById("nomeContato").value;
+      const numero = document.getElementById("numeroContato").value;
+      await fetch("/api/contatos", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, numero })
+      });
+      carregarContatos();
+    }
+    async function importarCSV() {
+      const file = document.getElementById("uploadCSV").files[0];
+      const form = new FormData();
+      form.append("file", file);
+      await fetch("/api/contatos/import", { method: "POST", body: form });
+      carregarContatos();
+    }
+    carregarContatos();
+  </script>
 </body>
 </html>

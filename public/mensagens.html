@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx - Mensagens</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -10,7 +9,7 @@
   <aside class="sidebar">
     <img src="logo.png" class="logo">
     <ul>
-      <li><a href="inicio.html">🏠 Início</a></li>
+      <li><a href="index.html">🏠 Início</a></li>
       <li><a href="conexao.html">🔗 Conexão</a></li>
       <li class="active"><a href="mensagens.html">💬 Mensagens</a></li>
       <li><a href="contatos.html">👥 Contatos</a></li>
@@ -18,15 +17,24 @@
       <li><a href="config.html">⚙️ Configurações</a></li>
     </ul>
   </aside>
-
   <main>
-    <h1>Enviar Mensagem</h1>
-    <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
-    <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
-    <button onclick="sendMessage()">Enviar</button>
-    <p id="sendStatus" class="status">⏳ Aguardando...</p>
+    <h1>Mensagens</h1>
+    <input id="destino" placeholder="Número destino">
+    <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
+    <button onclick="enviarMensagem()">Enviar</button>
+    <p id="statusEnvio"></p>
   </main>
-
-  <script src="app.js"></script>
+  <script>
+    async function enviarMensagem() {
+      const phone = document.getElementById("destino").value;
+      const message = document.getElementById("mensagem").value;
+      const res = await fetch("/api/send", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, message })
+      });
+      document.getElementById("statusEnvio").innerText =
+        res.ok ? "✅ Enviado" : "❌ Erro no envio";
+    }
+  </script>
 </body>
 </html>

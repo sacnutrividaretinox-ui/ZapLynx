@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx - Início</title>
   <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body class="dashboard dark">
-  <!-- Sidebar -->
   <aside class="sidebar">
-    <img src="logo.png" alt="ZapLynx Logo" class="logo">
+    <img src="logo.png" class="logo">
     <ul>
       <li class="active"><a href="index.html">🏠 Início</a></li>
       <li><a href="conexao.html">🔗 Conexão</a></li>
@@ -20,79 +18,43 @@
       <li><a href="config.html">⚙️ Configurações</a></li>
     </ul>
   </aside>
-
-  <!-- Main -->
   <main>
-    <header>
-      <h1>Início</h1>
-      <p>Bem-vindo ao seu painel ZapLynx 🚀</p>
-    </header>
-
-    <!-- Cards -->
+    <h1>Painel</h1>
     <section class="cards">
-      <div class="card"><h3>📩 Hoje</h3><p id="statHoje">0</p></div>
-      <div class="card"><h3>📊 Semana</h3><p id="statSemana">0</p></div>
-      <div class="card"><h3>📆 Mês</h3><p id="statMes">0</p></div>
-      <div class="card"><h3>👥 Contatos</h3><p id="statContatos">0</p></div>
+      <div class="card"><h3>Hoje</h3><p id="statHoje">0</p></div>
+      <div class="card"><h3>Semana</h3><p id="statSemana">0</p></div>
+      <div class="card"><h3>Mês</h3><p id="statMes">0</p></div>
     </section>
-
-    <!-- Gráfico -->
     <section class="chart">
-      <h2>Mensagens enviadas</h2>
+      <h2>Mensagens por dia</h2>
       <canvas id="chartMsgs"></canvas>
     </section>
-
-    <!-- Histórico -->
     <section class="history">
-      <h2>Histórico recente</h2>
-      <ul id="historyList">
-        <li>⏳ Nenhuma atividade ainda...</li>
-      </ul>
+      <h2>Histórico</h2>
+      <ul id="historyList"></ul>
     </section>
   </main>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Carregar estatísticas para o gráfico
     async function carregarEstatisticas() {
       const res = await fetch("/api/stats");
       const stats = await res.json();
-
       new Chart(document.getElementById("chartMsgs"), {
         type: "line",
-        data: {
-          labels: stats.labels,
-          datasets: [{
-            label: "Mensagens enviadas",
-            data: stats.data,
-            borderColor: "#ff0000",
-            backgroundColor: "rgba(255,0,0,0.2)",
-            fill: true,
-            tension: 0.3
-          }]
-        }
+        data: { labels: stats.labels, datasets: [{ data: stats.data, borderColor: "#ff0000" }] }
       });
     }
-
-    // Carregar histórico
     async function carregarHistorico() {
       const res = await fetch("/api/history");
       const history = await res.json();
       const list = document.getElementById("historyList");
-
-      if (!history || history.length === 0) {
-        list.innerHTML = "<li>⏳ Nenhuma atividade ainda...</li>";
-        return;
-      }
-
       list.innerHTML = "";
-      history.forEach(log => {
+      history.forEach(h => {
         const li = document.createElement("li");
-        li.innerText = `📤 ${log.phone}: "${log.message}" (${new Date(log.date).toLocaleString()})`;
+        li.innerText = `${h.phone}: "${h.message}" (${new Date(h.date).toLocaleString()})`;
         list.appendChild(li);
       });
     }
-
     carregarEstatisticas();
     carregarHistorico();
   </script>

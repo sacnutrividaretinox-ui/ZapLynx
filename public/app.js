@@ -1,71 +1,49 @@
-// ============================
-// 📌 Gerar QR Code
-// ============================
-const btnQr = document.getElementById("btnGenerateQR");
-const qrImg = document.getElementById("qrImage");
-const qrStatus = document.getElementById("qrStatus");
+// public/app.js
 
-btnQr?.addEventListener("click", async () => {
-  qrStatus.textContent = "⏳ Gerando QR Code...";
-  qrStatus.style.color = "#38bdf8";
+async function gerarQRCode() {
+  const qrDiv = document.getElementById("qrCodeContainer");
+  qrDiv.innerHTML = "⏳ Aguardando ação...";
 
   try {
     const res = await fetch("/api/qr");
     const data = await res.json();
-    console.log("📥 Resposta bruta /api/qr:", data);
 
-    // Tentativas de localizar QR
-    if (data.qrCode || data.base64 || data.value || data.url) {
-      const qr = data.qrCode || data.base64 || data.value || data.url;
-      qrImg.src = qr.startsWith("data:image") ? qr : `data:image/png;base64,${qr}`;
-      qrImg.style.display = "block";
-      qrStatus.textContent = "✅ QR Code gerado!";
-      qrStatus.style.color = "#22c55e";
+    console.log("Resposta bruta /api/qr:", data);
+
+    if (data.qrCode) {
+      // Se veio um base64 → renderiza a imagem
+      qrDiv.innerHTML = `<img src="data:image/png;base64,${data.qrCode}" 
+        alt="QR Code" style="max-width:250px; border:2px solid #00ffcc; border-radius:8px"/>`;
+    } else if (data.connected) {
+      // Se já está conectado
+      qrDiv.innerHTML = `<p style="color:#00ffcc; font-weight:bold;">✅ WhatsApp já conectado!</p>`;
     } else {
-      qrStatus.textContent = "⚠️ Veja console → resposta bruta";
-      qrStatus.style.color = "#fbbf24";
+      qrDiv.innerHTML = `<p style="color:#ff4444;">⚠ Nenhum QR retornado. Veja os logs.</p>`;
     }
   } catch (err) {
-    qrStatus.textContent = "❌ Erro inesperado: " + err.message;
-    qrStatus.style.color = "#ef4444";
+    console.error("Erro ao gerar QR:", err);
+    qrDiv.innerHTML = `<p style="color:#ff4444;">❌ Erro ao gerar QR Code</p>`;
   }
-});
+}
 
-// ============================
-// 📌 Conectar pelo Número
-// ============================
-const btnConnectNumber = document.getElementById("btnConnectNumber");
-const connectNumberInput = document.getElementById("connectNumber");
-const connectStatus = document.getElementById("connectStatus");
-
-btnConnectNumber?.addEventListener("click", async () => {
-  const number = connectNumberInput.value.trim();
-  if (!number) {
-    alert("Digite um número para conectar!");
-    return;
-  }
-
-  connectStatus.textContent = "⏳ Conectando...";
-  connectStatus.style.color = "#38bdf8";
+// Enviar mensagem
+async function enviarMensagem() {
+  const phone = document.getElementById("numero").value;
+  const message = document.getElementById("mensagem").value;
 
   try {
-    const res = await fetch("/api/connect-number", {
+    const res = await fetch("/api/send-message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ number })
+      body: JSON.stringify({ phone, message })
     });
-    const data = await res.json();
-    console.log("📥 Resposta bruta /api/connect-number:", data);
 
-    if (data.error) {
-      connectStatus.textContent = "❌ " + data.error;
-      connectStatus.style.color = "#ef4444";
-    } else {
-      connectStatus.textContent = "✅ Conectado com sucesso!";
-      connectStatus.style.color = "#22c55e";
-    }
+    const data = await res.json();
+    console.log("Resposta /send-message:", data);
+
+    alert("Mensagem enviada!");
   } catch (err) {
-    connectStatus.textContent = "❌ Erro inesperado: " + err.message;
-    connectStatus.style.color = "#ef4444";
+    console.error("Erro ao enviar:", err);
+    alert("Erro ao enviar mensagem!");
   }
-});
+}

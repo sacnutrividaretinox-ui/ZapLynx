@@ -1,46 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
+  <div class="container">
     <h1>ZapLynx 🚀</h1>
-  </header>
 
-  <main>
-    <!-- Conectar via QR Code -->
-    <section class="card">
+    <!-- Conectar via QR -->
+    <div class="card">
       <h2>Conectar WhatsApp via QR Code</h2>
-      <button id="btnGenerateQR">Gerar QR Code</button>
-      <p id="qrStatus">Aguardando ação...</p>
-      <img id="qrImage" alt="QR Code" style="display:none; margin-top:10px; max-width:250px;" />
-    </section>
-
-    <!-- Conectar pelo Número -->
-    <section class="card">
-      <h2>Conectar pelo Número</h2>
-      <input type="text" id="connectNumber" placeholder="Digite o número com DDI/DDD"/>
-      <button id="btnConnectNumber">Conectar</button>
-      <p id="connectStatus"></p>
-    </section>
+      <button onclick="gerarQRCode()">Gerar QR Code</button>
+      <div id="qrCodeContainer" class="qr-box"></div>
+    </div>
 
     <!-- Enviar mensagem -->
-    <section class="card">
+    <div class="card">
       <h2>Enviar Mensagem</h2>
-      <input type="text" id="phoneInput" placeholder="Número (com DDI/DDD)"/>
-      <textarea id="messageInput" placeholder="Digite sua mensagem"></textarea>
-      <button id="btnSend">Enviar</button>
-      <p id="sendStatus"></p>
-    </section>
-  </main>
-
-  <footer>
-    <p>⚡ Feito com ❤️ para integração com Z-API</p>
-  </footer>
+      <input id="numero" type="text" placeholder="Número (com DDI/DDD)">
+      <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
+      <button onclick="enviarMensagem()">Enviar</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -2,35 +2,38 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ZapLynx 🚀</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
   <div class="container">
     <h1>ZapLynx 🚀</h1>
 
-    <!-- QR Code -->
+    <!-- ================== QR Code ================== -->
     <section class="card">
       <h2>Conectar WhatsApp</h2>
       <button id="btnQr">Gerar QR Code</button>
-      <p id="qrStatus"></p>
-      <img id="qrImage" alt="QR Code" style="display:none; max-width:250px; margin-top:10px;" />
+      <p id="qrStatus">Aguardando ação...</p>
+      <img id="qrImage" alt="QR Code" style="display:none; max-width:250px; margin-top:10px; border:4px solid #38bdf8; border-radius:12px;"/>
     </section>
 
-    <!-- Enviar Mensagem -->
+    <!-- ================== Enviar Mensagem ================== -->
     <section class="card">
       <h2>Enviar Mensagem</h2>
-      <input type="text" id="phone" placeholder="Número (com DDI/DDD)" />
-      <textarea id="message" placeholder="Digite sua mensagem"></textarea>
-      <button id="sendBtn">Enviar</button>
+      <div class="form">
+        <input type="text" id="phone" placeholder="Número (com DDI/DDD)" required/>
+        <textarea id="message" placeholder="Digite sua mensagem" required></textarea>
+        <button id="sendBtn">Enviar</button>
+      </div>
+      <div id="sendStatus"></div>
     </section>
 
-    <!-- Histórico -->
+    <!-- ================== Histórico ================== -->
     <section class="card">
       <h2>Histórico de Mensagens</h2>
-      <button id="refreshBtn">Atualizar</button>
-      <table>
+      <button id="refreshBtn">🔄 Atualizar</button>
+      <table id="historyTable">
         <thead>
           <tr>
             <th>ID</th>
@@ -40,7 +43,9 @@
             <th>Criado em</th>
           </tr>
         </thead>
-        <tbody id="history"></tbody>
+        <tbody id="history">
+          <!-- preenchido via app.js -->
+        </tbody>
       </table>
     </section>
   </div>

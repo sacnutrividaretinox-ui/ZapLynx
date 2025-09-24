@@ -49,10 +49,16 @@ app.get("/api/qr", async (req, res) => {
     });
 
     if (response.data?.value) {
-      // 🚀 retorna base64 com prefixo pronto
-      res.json({ qrCode: `data:image/png;base64,${response.data.value}` });
+      let qrCode = response.data.value;
+
+      // 🔑 Normaliza: se for só base64 cru, adiciona prefixo
+      if (!qrCode.startsWith("data:image")) {
+        qrCode = `data:image/png;base64,${qrCode}`;
+      }
+
+      res.json({ qrCode });
     } else if (response.data?.url) {
-      // 🚀 algumas versões da Z-API retornam link pronto
+      // Algumas versões da Z-API retornam URL pronto
       res.json({ qrCode: response.data.url });
     } else {
       res.status(500).json({

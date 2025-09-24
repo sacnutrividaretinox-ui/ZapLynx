@@ -15,10 +15,21 @@ const ZAPI = {
 };
 
 // =============================
-// 📊 Estatísticas
+// 📊 Estatísticas e Histórico
 // =============================
 let stats = { total: 0, success: 0, fail: 0, pending: 0 };
-let history = []; // Histórico de mensagens enviadas
+let history = [];
+
+// ✅ Função para registrar log
+function addHistory(phone, message, status) {
+  history.unshift({
+    phone,
+    message,
+    status,
+    time: new Date().toLocaleString("pt-BR")
+  });
+  if (history.length > 50) history.pop();
+}
 
 // ✅ Conectar via QR Code
 app.get("/api/qrcode", async (req, res) => {
@@ -34,7 +45,7 @@ app.get("/api/qrcode", async (req, res) => {
   }
 });
 
-// ✅ Conectar via Número (Pairing Code)
+// ✅ Conectar via Número (Phone Code)
 app.get("/api/phone-code/:phone", async (req, res) => {
   try {
     const phone = req.params.phone;
@@ -49,7 +60,7 @@ app.get("/api/phone-code/:phone", async (req, res) => {
   }
 });
 
-// ✅ Enviar mensagem
+// ✅ Enviar mensagem única
 app.post("/api/send", async (req, res) => {
   try {
     const { phone, message } = req.body;
@@ -59,38 +70,69 @@ app.post("/api/send", async (req, res) => {
     const response = await axios.post(
       `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/send-text`,
       { phone, message },
-      { headers: { "Client-Token": ZAPI.clientToken }
-    });
+      { headers: { "Client-Token": ZAPI.clientToken } }
+    );
 
     stats.pending--;
-    const log = {
-      phone,
-      message,
-      status: "success",
-      time: new Date().toLocaleString("pt-BR")
-    };
-
     if (response.data?.messageId) {
       stats.success++;
-      history.unshift(log); // adiciona no topo
+      addHistory(phone, message, "success");
       return res.json({ success: true, response: response.data });
     } else {
       stats.fail++;
-      log.status = "fail";
-      history.unshift(log);
+      addHistory(phone, message, "fail");
       return res.status(400).json({ success: false, response: response.data });
     }
   } catch (err) {
     stats.pending--;
     stats.fail++;
-    const log = {
-      phone: req.body.phone,
-      message: req.body.message,
-      status: "fail",
-      time: new Date().toLocaleString("pt-BR")
-    };
-    history.unshift(log);
+    addHistory(req.body.phone, req.body.message, "fail");
     console.error("Erro envio:", err.response?.data || err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ✅ Disparo em massa
+app.post("/api/bulk", async (req, res) => {
+  try {
+    const { phones, message } = req.body;
+    if (!phones || phones.length === 0) {
+      return res.status(400).json({ error: "Nenhum número fornecido" });
+    }
+
+    res.json({ success: true, msg: `Iniciando disparo para ${phones.length} números` });
+
+    // Dispara em background
+    for (let i = 0; i < phones.length; i++) {
+      const phone = phones[i];
+      stats.total++;
+      stats.pending++;
+
+      try {
+        const response = await axios.post(
+          `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/send-text`,
+          { phone, message },
+          { headers: { "Client-Token": ZAPI.clientToken } }
+        );
+
+        stats.pending--;
+        if (response.data?.messageId) {
+          stats.success++;
+          addHistory(phone, message, "success");
+        } else {
+          stats.fail++;
+          addHistory(phone, message, "fail");
+        }
+      } catch (err) {
+        stats.pending--;
+        stats.fail++;
+        addHistory(phone, message, "fail");
+      }
+
+      await new Promise(r => setTimeout(r, 2000)); // 2s de delay entre envios
+    }
+  } catch (err) {
+    console.error("Erro bulk:", err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -99,8 +141,7 @@ app.post("/api/send", async (req, res) => {
 app.get("/api/stats", (req, res) => res.json(stats));
 
 // ✅ Histórico
-app.get("/api/history", (req, res) => res.json(history.slice(0, 20))); // retorna últimos 20
+app.get("/api/history", (req, res) => res.json(history.slice(0, 20)));
 
-// 🚀 Start
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));

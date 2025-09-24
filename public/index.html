@@ -28,7 +28,7 @@
     <h3>Conectar WhatsApp</h3>
     <select id="connectMode">
       <option value="qr">QR Code</option>
-      <option value="phone">Número (Pairing Code)</option>
+      <option value="phone">Número (Phone Code)</option>
     </select>
     <div id="phoneInput" style="display:none;">
       <input type="text" id="phoneConnect" placeholder="Número com DDI/DDD">
@@ -38,13 +38,22 @@
     <img id="qrImage" style="display:none;" width="250">
   </div>
 
-  <!-- Enviar mensagem -->
+  <!-- Enviar mensagem única -->
   <div class="card">
     <h3>Enviar Mensagem</h3>
     <input type="text" id="phone" placeholder="Número (com DDI/DDD)">
     <textarea id="message" placeholder="Digite sua mensagem"></textarea>
     <button onclick="sendMessage()">Enviar</button>
     <p id="sendStatus"></p>
+  </div>
+
+  <!-- Enviar em massa -->
+  <div class="card">
+    <h3>📤 Disparo em Massa</h3>
+    <textarea id="bulkPhones" placeholder="Cole os números separados por vírgula"></textarea>
+    <textarea id="bulkMessage" placeholder="Mensagem para todos"></textarea>
+    <button onclick="sendBulk()">Enviar em Massa</button>
+    <p id="bulkStatus"></p>
   </div>
 
   <!-- Estatísticas -->
@@ -60,7 +69,7 @@
 
   <!-- Histórico -->
   <div class="card">
-    <h3>📜 Histórico de Mensagens</h3>
+    <h3>📜 Histórico</h3>
     <table>
       <thead>
         <tr><th>Telefone</th><th>Mensagem</th><th>Status</th><th>Data/Hora</th></tr>
@@ -121,6 +130,30 @@
       loadHistory();
     }
 
+    async function sendBulk() {
+      const rawPhones = document.getElementById("bulkPhones").value.trim();
+      const message = document.getElementById("bulkMessage").value.trim();
+      const bulkStatus = document.getElementById("bulkStatus");
+
+      if (!rawPhones || !message) {
+        alert("Preencha números e mensagem!");
+        return;
+      }
+
+      const phones = rawPhones.split(",").map(p => p.trim()).filter(p => p);
+      bulkStatus.innerText = `⏳ Iniciando disparo para ${phones.length} números...`;
+
+      const res = await fetch("/api/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phones, message })
+      });
+
+      const data = await res.json();
+      bulkStatus.innerText = data.success ? "🚀 Disparo em andamento..." : "❌ Erro no disparo.";
+      loadHistory();
+    }
+
     async function loadStats() {
       const res = await fetch("/api/stats");
       const data = await res.json();
@@ -147,13 +180,8 @@
       });
     }
 
-    setInterval(() => {
-      loadStats();
-      loadHistory();
-    }, 3000);
-
-    loadStats();
-    loadHistory();
+    setInterval(() => { loadStats(); loadHistory(); }, 3000);
+    loadStats(); loadHistory();
   </script>
 </body>
 </html>

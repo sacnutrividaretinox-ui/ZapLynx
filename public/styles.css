@@ -51,8 +51,14 @@ aside{
 }
 #sidebar .nav-link:hover{background:#21262d}
 
-/* Main grid */
+/* Overlay (base + mobile) */
+#overlay{
+  display:none; /* base */
+}
+
+/* Main / Cards */
 main{flex:1;padding:24px}
+section[hidden]{display:none;} /* garante ocultação */
 .card{
   background:var(--panel-2);
   border:1px solid #30363d;
@@ -65,13 +71,12 @@ main{flex:1;padding:24px}
 }
 .card.active{opacity:1;transform:translateY(0)}
 
+/* Títulos + underline animado */
 .card h2{
   position:relative;
   padding-bottom:6px;
   margin-bottom:16px;
 }
-
-/* underline animado */
 .card h2::after{
   content:"";
   position:absolute;
@@ -89,7 +94,7 @@ main{flex:1;padding:24px}
   font-weight:600;
 }
 
-/* Cores personalizadas */
+/* Cores personalizadas por aba (link + título underline) */
 #sidebar .nav-link.active[href="#inicio"]{color:#2ea043}
 #sidebar .nav-link.active[href="#dashboard"]{color:#58a6ff}
 #sidebar .nav-link.active[href="#meus-numeros"]{color:#f0ad4e}
@@ -99,7 +104,6 @@ main{flex:1;padding:24px}
 #sidebar .nav-link.active[href="#templates"]{color:#e85aad}
 #sidebar .nav-link.active[href="#conectar"]{color:#2dd4bf}
 
-/* underline colorido nos títulos */
 section#inicio.active h2::after{width:60px;background:#2ea043}
 section#dashboard.active h2::after{width:60px;background:#58a6ff}
 section#meus-numeros.active h2::after{width:60px;background:#f0ad4e}
@@ -109,7 +113,7 @@ section#historico.active h2::after{width:60px;background:#fb923c}
 section#templates.active h2::after{width:60px;background:#e85aad}
 section#conectar.active h2::after{width:60px;background:#2dd4bf}
 
-/* Inputs */
+/* Inputs / Botões */
 input,textarea,select,button{
   width:100%;border-radius:8px;border:1px solid #30363d;
   background:#0d1117;color:var(--text);
@@ -151,7 +155,10 @@ button.btn:hover{opacity:0.9}
     transform:translateX(-100%);z-index:20;
   }
   aside.open{transform:translateX(0);}
-  #overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:15}
+  #overlay{
+    display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(0,0,0,.5);z-index:15;
+  }
 }
 @media (max-width:600px){
   .topbar h1{font-size:16px}

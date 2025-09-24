@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WhatsApp Micro-SaaS</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    section[hidden]{display:none;}
-  </style>
 </head>
 <body>
   <!-- Topbar -->
@@ -124,11 +121,10 @@
   <!-- Scripts -->
   <script src="app.js"></script>
   <script>
+    // ===== Sidebar + overlay responsivo =====
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const toggle = document.getElementById("menuToggle");
-    const links = document.querySelectorAll("#sidebar .nav-link");
-    const sections = document.querySelectorAll("main section");
 
     toggle?.addEventListener("click", () => {
       sidebar.classList.toggle("open");
@@ -140,35 +136,57 @@
       overlay.style.display = "none";
     });
 
+    // ===== Navegação de abas com hash routing =====
+    const links = document.querySelectorAll("#sidebar .nav-link");
+    const sections = document.querySelectorAll("main section");
+
     function showSection(id) {
+      // esconder todas
       sections.forEach(sec => {
         sec.classList.remove("active");
         sec.hidden = true;
       });
-      links.forEach(l => l.classList.remove("active"));
+      // desmarcar links
+      links.forEach(l => {
+        l.classList.remove("active");
+        l.removeAttribute("aria-current");
+      });
 
+      // mostrar alvo
       const target = document.getElementById(id);
       if (target) {
         target.hidden = false;
-        void target.offsetWidth; // força reflow para animar
+        void target.offsetWidth; // reflow p/ animar
         target.classList.add("active");
       }
+
+      // marcar link ativo
       const activeLink = document.querySelector(`#sidebar .nav-link[href="#${id}"]`);
-      if (activeLink) activeLink.classList.add("active");
+      if (activeLink) {
+        activeLink.classList.add("active");
+        activeLink.setAttribute("aria-current", "page");
+      }
     }
 
+    // Clique: atualiza hash (mantém URL navegável)
     links.forEach(link => {
       link.addEventListener("click", e => {
-        e.preventDefault();
-        const id = link.getAttribute("href").replace("#", "");
-        showSection(id);
+        // deixa o hash mudar (sem preventDefault) para funcionar com voltar/avançar
+        // mas fecha o menu no mobile
         sidebar.classList.remove("open");
         overlay.style.display = "none";
       });
     });
 
-    // Mostrar "Início" ao carregar
-    showSection("inicio");
+    // Hashchange (voltar/avançar do navegador)
+    window.addEventListener("hashchange", () => {
+      const id = (location.hash || "#inicio").slice(1);
+      showSection(id);
+    });
+
+    // Inicialização
+    const startId = (location.hash || "#inicio").slice(1);
+    showSection(startId);
   </script>
 </body>
 </html>

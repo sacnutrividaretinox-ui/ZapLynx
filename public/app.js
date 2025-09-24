@@ -1,89 +1,87 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const qrBtn = document.getElementById("btnQr");
-  const qrImg = document.getElementById("qrImage");
-  const qrMsg = document.getElementById("qrMessage");
+// ============================
+// 📌 Função: Gerar QR Code
+// ============================
+async function gerarQRCode() {
+  const qrImg = document.getElementById("qrCode");
+  const statusEl = document.getElementById("status-qr");
 
-  const sendBtn = document.getElementById("btnSend");
-  const phoneInput = document.getElementById("phone");
-  const messageInput = document.getElementById("message");
-  const sendMsg = document.getElementById("sendMessage");
+  statusEl.textContent = "⏳ Gerando QR Code...";
 
-  // ========================
-  // 📌 Gerar QR Code
-  // ========================
-  qrBtn?.addEventListener("click", async () => {
-    qrMsg.textContent = "⏳ Gerando QR Code...";
-    qrMsg.style.color = "yellow";
+  try {
+    const res = await fetch("/api/qr");
+    const data = await res.json();
+
+    console.log("Resposta bruta /api/qr:", data);
+
+    if (data?.value) {
+      qrImg.src = data.value;
+      qrImg.style.display = "block";
+      statusEl.textContent = "✅ QR Code gerado com sucesso!";
+    } else {
+      statusEl.textContent = "⚠️ Nenhum QR retornado. Veja os logs.";
+      qrImg.style.display = "none";
+    }
+  } catch (err) {
+    statusEl.textContent = "❌ Erro ao gerar QR Code.";
     qrImg.style.display = "none";
+    console.error("Erro:", err);
+  }
+}
 
-    try {
-      const res = await fetch("/api/qr");
-      const data = await res.json();
+// ============================
+// 📌 Função: Conectar pelo Número (Pairing Code)
+// ============================
+async function conectarNumero() {
+  const phone = document.getElementById("numero").value;
+  const statusEl = document.getElementById("status-numero");
 
-      if (data.qrCode) {
-        // Verifica se é Base64 ou URL
-        if (data.qrCode.startsWith("data:image")) {
-          qrImg.src = data.qrCode; // Base64 direto
-        } else {
-          qrImg.src = data.qrCode; // URL direto
-        }
-        qrImg.style.display = "block";
-        qrMsg.textContent = "✅ QR Code gerado com sucesso!";
-        qrMsg.style.color = "limegreen";
-      } else if (data.error) {
-        qrMsg.textContent = `⚠️ Erro: ${data.error}`;
-        qrMsg.style.color = "red";
-        console.warn("Erro detalhado:", data.details || data);
-      } else {
-        qrMsg.textContent = "⚠️ Nenhum QR retornado pela API.";
-        qrMsg.style.color = "orange";
-        console.warn("Resposta bruta:", data);
-      }
-    } catch (err) {
-      qrMsg.textContent = "❌ Falha ao se conectar ao servidor.";
-      qrMsg.style.color = "red";
-      console.error("Erro no front-end:", err);
+  statusEl.textContent = "⏳ Solicitando Pairing Code...";
+
+  try {
+    const res = await fetch(`/api/connect-number/${phone}`);
+    const data = await res.json();
+
+    console.log("Resposta bruta /api/connect-number:", data);
+
+    if (data?.value) {
+      statusEl.textContent = "✅ Pairing Code gerado: " + data.value;
+      alert("Digite esse código no WhatsApp do número informado: " + data.value);
+    } else {
+      statusEl.textContent = "⚠️ Nenhum código retornado.";
     }
-  });
+  } catch (err) {
+    statusEl.textContent = "❌ Erro ao conectar pelo número.";
+    console.error("Erro:", err);
+  }
+}
 
-  // ========================
-  // 📌 Enviar Mensagem
-  // ========================
-  sendBtn?.addEventListener("click", async () => {
-    const phone = phoneInput.value.trim();
-    const message = messageInput.value.trim();
+// ============================
+// 📌 Função: Enviar Mensagem
+// ============================
+async function enviarMensagem() {
+  const phone = document.getElementById("telefone").value;
+  const message = document.getElementById("mensagem").value;
+  const statusEl = document.getElementById("status-msg");
 
-    if (!phone || !message) {
-      sendMsg.textContent = "⚠️ Informe número e mensagem.";
-      sendMsg.style.color = "orange";
-      return;
+  statusEl.textContent = "⏳ Enviando mensagem...";
+
+  try {
+    const res = await fetch("/api/send-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, message })
+    });
+
+    const data = await res.json();
+    console.log("Resposta bruta /api/send-message:", data);
+
+    if (data?.status === "success") {
+      statusEl.textContent = "✅ Mensagem enviada!";
+    } else {
+      statusEl.textContent = "⚠️ Erro ao enviar mensagem.";
     }
-
-    sendMsg.textContent = "⏳ Enviando...";
-    sendMsg.style.color = "yellow";
-
-    try {
-      const res = await fetch("/api/send-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, message }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        sendMsg.textContent = "✅ Mensagem enviada com sucesso!";
-        sendMsg.style.color = "limegreen";
-        console.log("Resposta Z-API:", data);
-      } else {
-        sendMsg.textContent = `❌ Erro: ${data.error || "Falha desconhecida"}`;
-        sendMsg.style.color = "red";
-        console.error("Erro detalhes:", data.details || data);
-      }
-    } catch (err) {
-      sendMsg.textContent = "❌ Erro ao enviar mensagem.";
-      sendMsg.style.color = "red";
-      console.error("Erro no front-end:", err);
-    }
-  });
-});
+  } catch (err) {
+    statusEl.textContent = "❌ Erro ao enviar mensagem.";
+    console.error("Erro:", err);
+  }
+}

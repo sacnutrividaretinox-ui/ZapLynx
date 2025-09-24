@@ -2,68 +2,52 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx - Conexão</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body { background: #111; color: #fff; font-family: Arial, sans-serif; }
-    .container { max-width: 500px; margin: 50px auto; padding: 20px; background: #1e1e1e; border-radius: 10px; text-align: center; }
-    h2 { margin-bottom: 20px; }
-    button { background: red; color: #fff; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-top: 10px; }
-    button:hover { background: #c00; }
-    img { margin-top: 20px; max-width: 300px; }
-    .status { margin-top: 15px; font-weight: bold; }
-    .ok { color: lime; }
-    .error { color: red; }
-  </style>
+  <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
   <div class="container">
-    <h2>🔗 Conectar via QR Code</h2>
-    <button onclick="gerarQRCode()">Gerar QR Code</button>
-    <div id="qrcodeArea">
-      <p id="qrcodeMsg" class="error">Nenhum QR retornado</p>
+    <div class="card">
+      <h2>🔗 Conectar via QR Code</h2>
+      <button onclick="gerarQRCode()">Gerar QR Code</button>
+      <div id="qrcodeArea" class="qrcode-area">
+        <p>⚠ Clique em "Gerar QR Code" para conectar</p>
+      </div>
+      <p id="status" style="color:red;">❌ Não conectado</p>
     </div>
-    <div class="status" id="status">⏳ Aguardando...</div>
   </div>
 
   <script>
     async function gerarQRCode() {
-      document.getElementById("qrcodeMsg").innerText = "⏳ Gerando QR Code...";
-      document.getElementById("qrcodeMsg").className = "";
-
       try {
         const res = await fetch("/api/qrcode");
         const data = await res.json();
 
-        if (data.qr) {
-          document.getElementById("qrcodeArea").innerHTML =
-            `<img src="data:image/png;base64,${data.qr}" alt="QR Code">`;
-          checarStatus();
-        } else {
-          document.getElementById("qrcodeMsg").innerText = "❌ Erro ao gerar QR Code";
-          document.getElementById("qrcodeMsg").className = "error";
-        }
-      } catch (err) {
-        document.getElementById("qrcodeMsg").innerText = "❌ Erro de conexão";
-        document.getElementById("qrcodeMsg").className = "error";
-        console.error(err);
-      }
-    }
+        const qrcodeArea = document.getElementById("qrcodeArea");
+        const status = document.getElementById("status");
 
-    async function checarStatus() {
-      try {
-        const res = await fetch("/api/status");
-        const data = await res.json();
-        if (data.connected) {
-          document.getElementById("status").innerText = "✅ Conectado!";
-          document.getElementById("status").className = "status ok";
+        if (data.qr) {
+          qrcodeArea.innerHTML = `<img src="data:image/png;base64,${data.qr}" alt="QR Code" style="max-width:200px;">`;
+          status.style.color = "green";
+          status.innerText = "✅ QR Code gerado, escaneie no WhatsApp!";
         } else {
-          document.getElementById("status").innerText = "❌ Não conectado";
-          document.getElementById("status").className = "status error";
+          qrcodeArea.innerHTML = `<p style="color:red;">❌ Nenhum QR retornado</p>`;
+          status.style.color = "red";
+          status.innerText = "❌ Não conectado";
         }
       } catch (err) {
-        document.getElementById("status").innerText = "⚠️ Erro ao verificar status";
-        document.getElementById("status").className = "status error";
+        console.error("Erro ao gerar QR:", err);
+        const qrcodeArea = document.getElementById("qrcodeArea");
+        const status = document.getElementById("status");
+
+        if (qrcodeArea) {
+          qrcodeArea.innerHTML = `<p style="color:red;">❌ Erro ao gerar QR Code</p>`;
+        }
+        if (status) {
+          status.style.color = "red";
+          status.innerText = "❌ Não conectado";
+        }
       }
     }
   </script>

@@ -4,50 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx - Conexão</title>
-  <link rel="stylesheet" type="text/css" href="./style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <div class="card">
       <h2>🔗 Conectar via QR Code</h2>
       <button onclick="gerarQRCode()">Gerar QR Code</button>
-      <div id="qrcodeArea" class="qrcode-area">
+      <div id="qrcodeArea">
         <p>⚠ Clique em "Gerar QR Code" para conectar</p>
       </div>
-      <p id="status" style="color:red;">❌ Não conectado</p>
+      <p id="status">❌ Não conectado</p>
     </div>
   </div>
 
   <script>
     async function gerarQRCode() {
+      const qrcodeArea = document.getElementById("qrcodeArea");
+      const status = document.getElementById("status");
+
       try {
         const res = await fetch("/api/qrcode");
+        if (!res.ok) throw new Error("Erro HTTP " + res.status);
+
         const data = await res.json();
 
-        const qrcodeArea = document.getElementById("qrcodeArea");
-        const status = document.getElementById("status");
-
         if (data.qr) {
-          qrcodeArea.innerHTML = `<img src="data:image/png;base64,${data.qr}" alt="QR Code" style="max-width:200px;">`;
-          status.style.color = "green";
+          qrcodeArea.innerHTML = `<img src="data:image/png;base64,${data.qr}" alt="QR Code">`;
           status.innerText = "✅ QR Code gerado, escaneie no WhatsApp!";
+          status.style.color = "limegreen";
         } else {
           qrcodeArea.innerHTML = `<p style="color:red;">❌ Nenhum QR retornado</p>`;
-          status.style.color = "red";
           status.innerText = "❌ Não conectado";
+          status.style.color = "red";
         }
       } catch (err) {
         console.error("Erro ao gerar QR:", err);
-        const qrcodeArea = document.getElementById("qrcodeArea");
-        const status = document.getElementById("status");
-
-        if (qrcodeArea) {
-          qrcodeArea.innerHTML = `<p style="color:red;">❌ Erro ao gerar QR Code</p>`;
-        }
-        if (status) {
-          status.style.color = "red";
-          status.innerText = "❌ Não conectado";
-        }
+        qrcodeArea.innerHTML = `<p style="color:red;">❌ Erro ao gerar QR Code</p>`;
+        status.innerText = "❌ Não conectado";
+        status.style.color = "red";
       }
     }
   </script>

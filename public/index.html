@@ -47,6 +47,10 @@
           <svg viewBox="0 0 24 24"><path d="M4 4h16v2H4V4zm0 4h16v2H4V8zm0 4h10v2H4v-2zm0 4h10v2H4v-2z"/></svg>
           Templates
         </a>
+        <a href="#conectar" class="nav-link">
+          <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-1.1-.9-2-2-2H5C3.9 5 3 5.9 3 7v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-3.5l4 4v-11l-4 4z"/></svg>
+          Conectar Número
+        </a>
       </nav>
     </aside>
 
@@ -113,6 +117,21 @@
           <select id="tplSelect"></select>
           <button id="deleteTpl" class="btn btn-danger">Excluir</button>
           <button id="applyTpl" class="btn">Aplicar</button>
+        </div>
+      </section>
+
+      <!-- CONECTAR NÚMERO -->
+      <section id="conectar" class="card">
+        <h2>Conectar Número</h2>
+        <div class="row">
+          <button id="generateQrBtn" class="btn">
+            <span class="spinner" id="qrSpin" hidden></span>
+            Gerar QR Code
+          </button>
+        </div>
+        <div id="qrStatus" class="muted">Aguardando ação…</div>
+        <div id="qrContainer">
+          <img id="qrImage" alt="QR Code" hidden />
         </div>
       </section>
     </main>

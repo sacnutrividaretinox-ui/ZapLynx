@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZapLynx 🚀</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
@@ -13,27 +13,24 @@
     <!-- QR Code -->
     <section class="card">
       <h2>Conectar WhatsApp</h2>
-      <button id="generateQrBtn">Gerar QR Code</button>
-      <div id="qrStatus">Aguardando ação...</div>
-      <img id="qrImage" alt="QR Code" style="display:none;"/>
+      <button id="btnQr">Gerar QR Code</button>
+      <p id="qrStatus"></p>
+      <img id="qrImage" alt="QR Code" style="display:none; max-width:250px; margin-top:10px;" />
     </section>
 
-    <!-- Enviar mensagem -->
+    <!-- Enviar Mensagem -->
     <section class="card">
       <h2>Enviar Mensagem</h2>
-      <form id="sendForm">
-        <input type="text" id="phone" placeholder="Número (com DDI/DD)" required/>
-        <textarea id="message" placeholder="Digite sua mensagem" required></textarea>
-        <button type="submit">Enviar</button>
-      </form>
-      <div id="sendStatus"></div>
+      <input type="text" id="phone" placeholder="Número (com DDI/DDD)" />
+      <textarea id="message" placeholder="Digite sua mensagem"></textarea>
+      <button id="sendBtn">Enviar</button>
     </section>
 
     <!-- Histórico -->
     <section class="card">
       <h2>Histórico de Mensagens</h2>
-      <button id="refreshHistoryBtn">🔄 Atualizar</button>
-      <table id="historyTable">
+      <button id="refreshBtn">Atualizar</button>
+      <table>
         <thead>
           <tr>
             <th>ID</th>
@@ -43,7 +40,7 @@
             <th>Criado em</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="history"></tbody>
       </table>
     </section>
   </div>

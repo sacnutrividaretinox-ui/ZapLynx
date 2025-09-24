@@ -1,102 +1,88 @@
-// ============================
-// 📌 Gerar QR Code
-// ============================
-document.getElementById("generateQrBtn")?.addEventListener("click", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const btnQr = document.getElementById("btnQr");
   const qrImage = document.getElementById("qrImage");
   const qrStatus = document.getElementById("qrStatus");
 
-  qrStatus.innerText = "Gerando QR Code...";
-  qrStatus.style.color = "#38bdf8";
-  qrImage.style.display = "none";
+  const phoneInput = document.getElementById("phone");
+  const messageInput = document.getElementById("message");
+  const sendBtn = document.getElementById("sendBtn");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const historyTable = document.getElementById("history");
 
-  try {
-    const res = await fetch("/api/qr");
-    const data = await res.json();
+  // Gerar QR Code
+  btnQr.addEventListener("click", async () => {
+    qrStatus.textContent = "⏳ Gerando QR Code...";
+    qrImage.style.display = "none";
 
-    if (data.qrCode) {
-      qrImage.src = data.qrCode; // 🚀 já vem pronto do back
-      qrImage.style.display = "block";
-      qrStatus.innerText = "QR Code gerado com sucesso!";
-      qrStatus.style.color = "#22c55e";
-    } else {
-      qrStatus.innerText = "Erro ao carregar QR Code";
-      qrStatus.style.color = "#ef4444";
+    try {
+      const res = await fetch("/api/qr");
+      const data = await res.json();
+
+      if (data.qrCode) {
+        // Se for base64
+        if (data.qrCode.startsWith("data:image")) {
+          qrImage.src = data.qrCode;
+        } else {
+          // Se for link pronto
+          qrImage.src = data.qrCode;
+        }
+        qrImage.style.display = "block";
+        qrStatus.textContent = "✅ QR Code gerado com sucesso!";
+      } else {
+        qrStatus.textContent = "⚠️ Erro: QR Code não retornado.";
+        console.error("Resposta inesperada:", data);
+      }
+    } catch (err) {
+      qrStatus.textContent = "❌ Erro ao buscar QR Code.";
+      console.error(err);
     }
-  } catch (err) {
-    qrStatus.innerText = `Erro: ${err.message}`;
-    qrStatus.style.color = "#ef4444";
-  }
-});
+  });
 
-// ============================
-// 📌 Enviar mensagem
-// ============================
-document.getElementById("sendForm")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const phone = document.getElementById("phone").value;
-  const message = document.getElementById("message").value;
-  const sendStatus = document.getElementById("sendStatus");
-
-  sendStatus.innerText = "Enviando...";
-  sendStatus.style.color = "#38bdf8";
-
-  try {
-    const res = await fetch("/api/send-message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, message })
-    });
-    const data = await res.json();
-
-    if (data.error) {
-      sendStatus.innerText = `Erro: ${data.error}`;
-      sendStatus.style.color = "#ef4444";
-    } else {
-      sendStatus.innerText = "Mensagem enviada!";
-      sendStatus.style.color = "#22c55e";
-      document.getElementById("sendForm").reset();
-      loadHistory();
-    }
-  } catch (err) {
-    sendStatus.innerText = `Erro: ${err.message}`;
-    sendStatus.style.color = "#ef4444";
-  }
-});
-
-// ============================
-// 📌 Carregar histórico
-// ============================
-async function loadHistory() {
-  const tbody = document.querySelector("#historyTable tbody");
-  tbody.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
-
-  try {
-    const res = await fetch("/api/messages");
-    const messages = await res.json();
-
-    if (!messages.length) {
-      tbody.innerHTML = "<tr><td colspan='5'>Nenhuma mensagem encontrada</td></tr>";
+  // Enviar mensagem
+  sendBtn.addEventListener("click", async () => {
+    const phone = phoneInput.value.trim();
+    const message = messageInput.value.trim();
+    if (!phone || !message) {
+      alert("Preencha número e mensagem!");
       return;
     }
 
-    tbody.innerHTML = "";
-    messages.forEach((msg) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${msg.id}</td>
-        <td>${msg.phone}</td>
-        <td>${msg.message}</td>
-        <td>${msg.status}</td>
-        <td>${msg.created_at}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan='5'>Erro: ${err.message}</td></tr>`;
-  }
-}
+    try {
+      const res = await fetch("/api/send-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, message })
+      });
 
-document.getElementById("refreshHistoryBtn")?.addEventListener("click", loadHistory);
+      const data = await res.json();
+      alert("📨 Mensagem enviada! Verifique logs.");
+      console.log("Resposta:", data);
+    } catch (err) {
+      alert("❌ Erro ao enviar mensagem.");
+      console.error(err);
+    }
+  });
 
-// carregar histórico automaticamente
-loadHistory();
+  // Atualizar histórico
+  refreshBtn.addEventListener("click", async () => {
+    try {
+      const res = await fetch("/api/messages");
+      const data = await res.json();
+
+      historyTable.innerHTML = "";
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>${row.phone}</td>
+          <td>${row.message}</td>
+          <td>${row.status}</td>
+          <td>${row.createdAt}</td>
+        `;
+        historyTable.appendChild(tr);
+      });
+    } catch (err) {
+      console.error("Erro ao buscar histórico:", err);
+    }
+  });
+});

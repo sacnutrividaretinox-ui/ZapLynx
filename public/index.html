@@ -5,150 +5,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0a0f1c;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      color: #3ba3ff;
-    }
-    .card {
-      background: #141c2c;
-      padding: 20px;
-      border-radius: 12px;
-      width: 340px;
-      margin: 15px 0;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
-    }
+    body { font-family: Arial, sans-serif; background: #0a0f1c; color: #fff; text-align: center; }
+    .card { background: #141c2c; padding: 20px; border-radius: 12px; width: 340px; margin: 15px auto; }
     select, input, textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: none;
+      width: 100%; padding: 10px; margin: 8px 0;
+      border-radius: 6px; border: none;
     }
-    button {
-      background: #1e90ff;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0d6efd;
-    }
-    .qr {
-      text-align: center;
-      margin-top: 10px;
-    }
-    .qr img {
-      width: 200px;
-      height: 200px;
-    }
-    .status {
-      font-size: 14px;
-      margin-top: 8px;
-      color: #ffcc00;
-    }
-    .error {
-      color: #ff4444;
-      font-size: 14px;
-    }
-    .success {
-      color: #44ff44;
-      font-size: 14px;
-    }
+    button { background: #1e90ff; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #0d6efd; }
+    img { margin-top: 10px; max-width: 250px; }
+    .status { font-size: 14px; margin-top: 8px; }
+    .error { color: #ff4444; }
+    .success { color: #44ff44; }
   </style>
 </head>
 <body>
   <h1>ZapLynx 🚀</h1>
 
-  <!-- Bloco de Conexão -->
+  <!-- Card de conexão -->
   <div class="card">
     <h2>Conectar WhatsApp</h2>
     <select id="connectMode">
       <option value="qrcode">QR Code</option>
-      <option value="pairing">Número (Pairing Code)</option>
+      <option value="phone">Número (Phone Code)</option>
     </select>
     <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
     <button onclick="connect()">Conectar</button>
-    <div class="qr" id="qrContainer"></div>
-    <p id="connectStatus" class="status">⏳ Aguardando conexão...</p>
+    <div id="qrContainer"></div>
+    <p id="connectStatus" class="status">⏳ Aguardando...</p>
   </div>
 
-  <!-- Bloco de Envio -->
+  <!-- Card de envio -->
   <div class="card">
     <h2>Enviar Mensagem</h2>
     <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
     <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
     <button onclick="sendMessage()">Enviar</button>
-    <p id="sendStatus" class="status">⏳ Aguardando envio...</p>
+    <p id="sendStatus" class="status">⏳ Aguardando...</p>
   </div>
 
   <script>
+    const modeSelect = document.getElementById("connectMode");
+    const phoneInput = document.getElementById("phoneInput");
     const qrContainer = document.getElementById("qrContainer");
     const connectStatus = document.getElementById("connectStatus");
-    const phoneInput = document.getElementById("phoneInput");
-    const connectMode = document.getElementById("connectMode");
 
-    // Mostrar ou esconder campo de número dependendo do modo
-    connectMode.addEventListener("change", () => {
-      if (connectMode.value === "pairing") {
-        phoneInput.style.display = "block";
-      } else {
-        phoneInput.style.display = "none";
-      }
+    modeSelect.addEventListener("change", () => {
+      phoneInput.style.display = modeSelect.value === "phone" ? "block" : "none";
       qrContainer.innerHTML = "";
-      connectStatus.textContent = "⏳ Aguardando conexão...";
+      connectStatus.innerText = "⏳ Aguardando...";
     });
 
     async function connect() {
       qrContainer.innerHTML = "";
-      connectStatus.textContent = "⏳ Conectando...";
+      connectStatus.innerText = "⏳ Conectando...";
 
       try {
-        if (connectMode.value === "qrcode") {
+        if (modeSelect.value === "qrcode") {
           const res = await fetch("/api/qrcode");
-          if (!res.ok) throw new Error("Erro ao buscar QR Code");
           const data = await res.json();
           if (data?.value) {
             qrContainer.innerHTML = `<img src="${data.value}" alt="QR Code">`;
-            connectStatus.textContent = "✅ QR Code gerado!";
+            connectStatus.innerText = "✅ QR Code gerado!";
             connectStatus.className = "success";
           } else {
-            connectStatus.textContent = "⚠️ Nenhum QR retornado.";
+            connectStatus.innerText = "⚠️ Nenhum QR retornado.";
             connectStatus.className = "error";
           }
         } else {
-          const phone = document.getElementById("phoneInput").value.trim();
+          const phone = phoneInput.value.trim();
           if (!phone) {
-            connectStatus.textContent = "⚠️ Digite um número válido.";
+            connectStatus.innerText = "⚠️ Digite um número válido.";
             connectStatus.className = "error";
             return;
           }
-          const res = await fetch("/api/pairing", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ phone })
-          });
-          if (!res.ok) throw new Error("Erro ao solicitar Pairing Code");
+          const res = await fetch(`/api/phone-code/${phone}`);
           const data = await res.json();
           if (data?.code) {
-            connectStatus.textContent = `✅ Pairing Code: ${data.code}`;
+            connectStatus.innerText = `✅ Código de conexão: ${data.code}`;
             connectStatus.className = "success";
           } else {
-            connectStatus.textContent = "⚠️ Nenhum código retornado.";
+            connectStatus.innerText = "⚠️ Nenhum código retornado.";
             connectStatus.className = "error";
           }
         }
       } catch (err) {
-        connectStatus.textContent = "❌ Erro: " + err.message;
+        console.error(err);
+        connectStatus.innerText = "❌ Erro ao conectar.";
         connectStatus.className = "error";
       }
     }
@@ -159,24 +102,24 @@
       const sendStatus = document.getElementById("sendStatus");
 
       if (!phone || !message) {
-        sendStatus.textContent = "⚠️ Preencha número e mensagem!";
+        sendStatus.innerText = "⚠️ Preencha número e mensagem!";
         sendStatus.className = "error";
         return;
       }
 
-      sendStatus.textContent = "⏳ Enviando...";
+      sendStatus.innerText = "⏳ Enviando...";
       try {
         const res = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone, message })
         });
-        if (!res.ok) throw new Error("Erro ao enviar mensagem");
         const data = await res.json();
-        sendStatus.textContent = "✅ Mensagem enviada!";
+        sendStatus.innerText = "✅ Mensagem enviada!";
         sendStatus.className = "success";
       } catch (err) {
-        sendStatus.textContent = "❌ Erro: " + err.message;
+        console.error(err);
+        sendStatus.innerText = "❌ Erro ao enviar mensagem.";
         sendStatus.className = "error";
       }
     }

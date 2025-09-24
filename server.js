@@ -5,7 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const path = require("path");
-const db = require("./db"); // importa o SQLite
+const db = require("./db"); // importa SQLite (better-sqlite3)
 
 const app = express();
 app.use(cors());
@@ -70,18 +70,10 @@ app.post("/api/send-message", async (req, res) => {
   try {
     const { phone, message } = req.body;
 
-    // salvar no banco antes de enviar
-    db.run(
-      "INSERT INTO messages (phone, message, status) VALUES (?, ?, ?)",
-      [phone, message, "pending"],
-      function (err) {
-        if (err) {
-          console.error("❌ Erro ao salvar no SQLite:", err.message);
-        } else {
-          console.log("💾 Mensagem salva no banco com id:", this.lastID);
-        }
-      }
-    );
+    // salvar no banco
+    db.prepare(
+      "INSERT INTO messages (phone, message, status) VALUES (?, ?, ?)"
+    ).run(phone, message, "pending");
 
     // enviar via Z-API
     const response = await axios.post(
@@ -91,10 +83,9 @@ app.post("/api/send-message", async (req, res) => {
     );
 
     // atualizar status no banco
-    db.run(
-      "UPDATE messages SET status = ? WHERE phone = ? AND message = ?",
-      ["sent", phone, message]
-    );
+    db.prepare(
+      "UPDATE messages SET status = ? WHERE phone = ? AND message = ?"
+    ).run("sent", phone, message);
 
     res.json(response.data);
   } catch (err) {
@@ -108,12 +99,12 @@ app.post("/api/send-message", async (req, res) => {
 
 // Histórico de mensagens
 app.get("/api/messages", (req, res) => {
-  db.all("SELECT * FROM messages ORDER BY created_at DESC", [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+  try {
+    const rows = db.prepare("SELECT * FROM messages ORDER BY created_at DESC").all();
     res.json(rows);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ============================

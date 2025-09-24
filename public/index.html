@@ -1,28 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZapLynx 🚀</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
     <h1>ZapLynx 🚀</h1>
 
-    <!-- Conectar via QR -->
+    <!-- Conectar WhatsApp via QR Code -->
     <div class="card">
       <h2>Conectar WhatsApp via QR Code</h2>
-      <button onclick="gerarQRCode()">Gerar QR Code</button>
-      <div id="qrCodeContainer" class="qr-box"></div>
+      <button id="btn-qr">Gerar QR Code</button>
+      <p id="qr-status"></p>
+      <img id="qr-image" style="display:none; max-width:250px; margin-top:10px;" />
     </div>
 
-    <!-- Enviar mensagem -->
+    <!-- Enviar Mensagem -->
     <div class="card">
       <h2>Enviar Mensagem</h2>
-      <input id="numero" type="text" placeholder="Número (com DDI/DDD)">
-      <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
-      <button onclick="enviarMensagem()">Enviar</button>
+      <input id="phone" type="text" placeholder="Número (com DDI/DDD)" />
+      <textarea id="message" placeholder="Digite sua mensagem"></textarea>
+      <button id="btn-send">Enviar</button>
+      <p id="send-status"></p>
     </div>
   </div>
 

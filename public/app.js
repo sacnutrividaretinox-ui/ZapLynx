@@ -1,35 +1,52 @@
-// public/app.js
+// ============================
+// 📌 Gerar QR Code
+// ============================
+document.getElementById("btn-qr").addEventListener("click", async () => {
+  const qrStatus = document.getElementById("qr-status");
+  const qrImage = document.getElementById("qr-image");
 
-async function gerarQRCode() {
-  const qrDiv = document.getElementById("qrCodeContainer");
-  qrDiv.innerHTML = "⏳ Aguardando ação...";
+  qrStatus.textContent = "⏳ Gerando QR Code...";
+  qrImage.style.display = "none";
+  qrImage.src = "";
 
   try {
     const res = await fetch("/api/qr");
     const data = await res.json();
 
-    console.log("Resposta bruta /api/qr:", data);
+    console.log("Resposta da API /api/qr:", data);
 
     if (data.qrCode) {
-      // Se veio um base64 → renderiza a imagem
-      qrDiv.innerHTML = `<img src="data:image/png;base64,${data.qrCode}" 
-        alt="QR Code" style="max-width:250px; border:2px solid #00ffcc; border-radius:8px"/>`;
+      // Caso venha já em base64 ou sem prefixo
+      qrImage.src = data.qrCode.startsWith("data:image")
+        ? data.qrCode
+        : `data:image/png;base64,${data.qrCode}`;
+      qrImage.style.display = "block";
+      qrStatus.textContent = "✅ QR Code gerado com sucesso!";
     } else if (data.connected) {
-      // Se já está conectado
-      qrDiv.innerHTML = `<p style="color:#00ffcc; font-weight:bold;">✅ WhatsApp já conectado!</p>`;
+      qrStatus.textContent = "✅ WhatsApp já está conectado!";
     } else {
-      qrDiv.innerHTML = `<p style="color:#ff4444;">⚠ Nenhum QR retornado. Veja os logs.</p>`;
+      qrStatus.textContent = "⚠️ Nenhum QR retornado. Veja os logs.";
     }
   } catch (err) {
-    console.error("Erro ao gerar QR:", err);
-    qrDiv.innerHTML = `<p style="color:#ff4444;">❌ Erro ao gerar QR Code</p>`;
+    console.error("Erro ao buscar QR:", err);
+    qrStatus.textContent = "❌ Erro ao gerar QR Code.";
   }
-}
+});
 
-// Enviar mensagem
-async function enviarMensagem() {
-  const phone = document.getElementById("numero").value;
-  const message = document.getElementById("mensagem").value;
+// ============================
+// 📌 Enviar Mensagem
+// ============================
+document.getElementById("btn-send").addEventListener("click", async () => {
+  const phone = document.getElementById("phone").value.trim();
+  const message = document.getElementById("message").value.trim();
+  const status = document.getElementById("send-status");
+
+  if (!phone || !message) {
+    status.textContent = "⚠️ Informe o número e a mensagem!";
+    return;
+  }
+
+  status.textContent = "⏳ Enviando...";
 
   try {
     const res = await fetch("/api/send-message", {
@@ -39,11 +56,15 @@ async function enviarMensagem() {
     });
 
     const data = await res.json();
-    console.log("Resposta /send-message:", data);
+    console.log("Resposta da API /api/send-message:", data);
 
-    alert("Mensagem enviada!");
+    if (data.error) {
+      status.textContent = "❌ Erro: " + data.error;
+    } else {
+      status.textContent = "✅ Mensagem enviada com sucesso!";
+    }
   } catch (err) {
-    console.error("Erro ao enviar:", err);
-    alert("Erro ao enviar mensagem!");
+    console.error("Erro ao enviar mensagem:", err);
+    status.textContent = "❌ Erro ao enviar mensagem.";
   }
-}
+});

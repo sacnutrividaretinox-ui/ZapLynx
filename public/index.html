@@ -5,109 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #0a0f1c; color: #fff; text-align: center; }
-    .card { background: #141c2c; padding: 20px; border-radius: 12px; width: 340px; margin: 15px auto; }
-    select, input, textarea, button {
-      width: 100%; padding: 10px; margin: 8px 0;
-      border-radius: 6px; border: none;
+    body {
+      background: #0f172a;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
     }
-    button { background: #1e90ff; color: white; font-weight: bold; cursor: pointer; }
-    button:hover { background: #0d6efd; }
-    img { margin-top: 10px; max-width: 250px; }
-    .status { font-size: 14px; margin-top: 8px; }
-    .error { color: #ff4444; }
-    .success { color: #44ff44; }
+    h1 {
+      margin-bottom: 20px;
+      color: #38bdf8;
+    }
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 10px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #16a34a;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat {
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>ZapLynx 🚀</h1>
 
-  <!-- Card de conexão -->
+  <!-- Enviar mensagem -->
   <div class="card">
-    <h2>Conectar WhatsApp</h2>
-    <select id="connectMode">
-      <option value="qrcode">QR Code</option>
-      <option value="phone">Número (Phone Code)</option>
-    </select>
-    <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
-    <button onclick="connect()">Conectar</button>
-    <div id="qrContainer"></div>
-    <p id="connectStatus" class="status">⏳ Aguardando...</p>
+    <h3>Enviar Mensagem</h3>
+    <input type="text" id="phone" placeholder="Número (com DDI/DDD)">
+    <textarea id="message" placeholder="Digite sua mensagem"></textarea>
+    <button onclick="sendMessage()">Enviar</button>
+    <p id="sendStatus"></p>
   </div>
 
-  <!-- Card de envio -->
+  <!-- Estatísticas -->
   <div class="card">
-    <h2>Enviar Mensagem</h2>
-    <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
-    <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
-    <button onclick="sendMessage()">Enviar</button>
-    <p id="sendStatus" class="status">⏳ Aguardando...</p>
+    <h3>📊 Estatísticas</h3>
+    <div class="stats-grid">
+      <div class="stat">Total: <span id="statTotal">0</span></div>
+      <div class="stat">✅ Sucesso: <span id="statSuccess">0</span></div>
+      <div class="stat">⏳ Pendentes: <span id="statPending">0</span></div>
+      <div class="stat">❌ Falhas: <span id="statFail">0</span></div>
+    </div>
   </div>
 
   <script>
-    const modeSelect = document.getElementById("connectMode");
-    const phoneInput = document.getElementById("phoneInput");
-    const qrContainer = document.getElementById("qrContainer");
-    const connectStatus = document.getElementById("connectStatus");
-
-    modeSelect.addEventListener("change", () => {
-      phoneInput.style.display = modeSelect.value === "phone" ? "block" : "none";
-      qrContainer.innerHTML = "";
-      connectStatus.innerText = "⏳ Aguardando...";
-    });
-
-    async function connect() {
-      qrContainer.innerHTML = "";
-      connectStatus.innerText = "⏳ Conectando...";
-
-      try {
-        if (modeSelect.value === "qrcode") {
-          const res = await fetch("/api/qrcode");
-          const data = await res.json();
-          if (data?.value) {
-            qrContainer.innerHTML = `<img src="${data.value}" alt="QR Code">`;
-            connectStatus.innerText = "✅ QR Code gerado!";
-            connectStatus.className = "success";
-          } else {
-            connectStatus.innerText = "⚠️ Nenhum QR retornado.";
-            connectStatus.className = "error";
-          }
-        } else {
-          const phone = phoneInput.value.trim();
-          if (!phone) {
-            connectStatus.innerText = "⚠️ Digite um número válido.";
-            connectStatus.className = "error";
-            return;
-          }
-          const res = await fetch(`/api/phone-code/${phone}`);
-          const data = await res.json();
-          if (data?.code) {
-            connectStatus.innerText = `✅ Código de conexão: ${data.code}`;
-            connectStatus.className = "success";
-          } else {
-            connectStatus.innerText = "⚠️ Nenhum código retornado.";
-            connectStatus.className = "error";
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        connectStatus.innerText = "❌ Erro ao conectar.";
-        connectStatus.className = "error";
-      }
-    }
-
     async function sendMessage() {
-      const phone = document.getElementById("sendPhone").value.trim();
-      const message = document.getElementById("sendMessage").value.trim();
-      const sendStatus = document.getElementById("sendStatus");
-
+      const phone = document.getElementById("phone").value.trim();
+      const message = document.getElementById("message").value.trim();
       if (!phone || !message) {
-        sendStatus.innerText = "⚠️ Preencha número e mensagem!";
-        sendStatus.className = "error";
+        alert("Preencha número e mensagem!");
         return;
       }
 
-      sendStatus.innerText = "⏳ Enviando...";
+      document.getElementById("sendStatus").innerText = "Enviando...";
+
       try {
         const res = await fetch("/api/send", {
           method: "POST",
@@ -115,14 +102,33 @@
           body: JSON.stringify({ phone, message })
         });
         const data = await res.json();
-        sendStatus.innerText = "✅ Mensagem enviada!";
-        sendStatus.className = "success";
+
+        if (data.success) {
+          document.getElementById("sendStatus").innerText = "✅ Mensagem enviada!";
+        } else {
+          document.getElementById("sendStatus").innerText = "❌ Falha ao enviar!";
+        }
       } catch (err) {
+        document.getElementById("sendStatus").innerText = "⚠️ Erro no envio.";
         console.error(err);
-        sendStatus.innerText = "❌ Erro ao enviar mensagem.";
-        sendStatus.className = "error";
       }
     }
+
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
+        document.getElementById("statTotal").innerText = data.total;
+        document.getElementById("statSuccess").innerText = data.success;
+        document.getElementById("statPending").innerText = data.pending;
+        document.getElementById("statFail").innerText = data.fail;
+      } catch (err) {
+        console.error("Erro ao carregar estatísticas:", err);
+      }
+    }
+
+    setInterval(loadStats, 3000); // atualiza a cada 3s
+    loadStats();
   </script>
 </body>
 </html>

@@ -1,42 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // --------- Helpers ---------
   const $ = (id) => document.getElementById(id);
 
-  // Elements
-  const qrImage   = $("qrImage");
-  const qrStatus  = $("qrStatus");
-  const btnQr     = $("btnQr") || $("generateQrBtn"); // <- aceita os dois IDs
+  const qrImage = $("qrImage");
+  const qrStatus = $("qrStatus");
+  const btnQr = $("btnQr");
 
   const phoneInput = $("phone");
   const messageInput = $("message");
-  const sendBtn   = $("sendBtn");
+  const sendBtn = $("sendBtn");
 
   const refreshBtn = $("refreshBtn");
   const historyTbody = $("history");
 
+  const btnConnectNumber = $("btnConnectNumber");
+  const connectNumberInput = $("connectNumber");
+  const connectStatus = $("connectStatus");
+
   // ============================
   // 📌 Gerar QR Code
   // ============================
-  async function handleGenerateQr() {
-    if (!qrStatus || !qrImage) return console.warn("QR elements não encontrados.");
+  btnQr?.addEventListener("click", async () => {
     qrStatus.textContent = "⏳ Gerando QR Code...";
-    qrStatus.style.color = "#38bdf8";
     qrImage.style.display = "none";
     qrImage.removeAttribute("src");
 
     try {
-      const res = await fetch("/api/qr", { cache: "no-store" });
+      const res = await fetch("/api/qr");
       const data = await res.json();
 
       if (!data || data.error) {
-        qrStatus.textContent = `❌ Erro: ${data?.error || "QR não retornado"}`;
+        qrStatus.textContent = "❌ Erro: " + (data?.error || "QR não retornado");
         qrStatus.style.color = "#ef4444";
-        console.error("Resposta /api/qr:", data);
         return;
       }
 
       let src = String(data.qrCode || "");
-      // Normaliza se vier apenas o base64 cru
       if (!src.startsWith("data:image") && !src.startsWith("http")) {
         src = `data:image/png;base64,${src}`;
       }
@@ -45,27 +43,53 @@ document.addEventListener("DOMContentLoaded", () => {
       qrImage.style.display = "block";
       qrStatus.textContent = "✅ QR Code gerado com sucesso!";
       qrStatus.style.color = "#22c55e";
-      console.log("QR aplicado:", src.slice(0, 50) + "...");
     } catch (err) {
-      qrStatus.textContent = `❌ Erro ao buscar QR: ${err.message}`;
+      qrStatus.textContent = "❌ Erro ao buscar QR: " + err.message;
       qrStatus.style.color = "#ef4444";
-      console.error(err);
     }
-  }
+  });
 
-  // Garante que o evento existe mesmo se mudarem o ID no HTML
-  if (btnQr) {
-    btnQr.addEventListener("click", handleGenerateQr);
-  } else {
-    console.warn("Botão de QR não encontrado. Use id='btnQr' ou id='generateQrBtn' no HTML.");
-  }
+  // ============================
+  // 📌 Conectar pelo Número
+  // ============================
+  btnConnectNumber?.addEventListener("click", async () => {
+    const number = connectNumberInput.value.trim();
+    if (!number) {
+      alert("Digite um número para conectar!");
+      return;
+    }
+
+    connectStatus.textContent = "⏳ Conectando...";
+    connectStatus.style.color = "#38bdf8";
+
+    try {
+      const res = await fetch("/api/connect-number", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ number })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        connectStatus.textContent = "❌ " + (data.error || "Erro ao conectar");
+        connectStatus.style.color = "#ef4444";
+      } else {
+        connectStatus.textContent = "✅ Conectado com sucesso!";
+        connectStatus.style.color = "#22c55e";
+        console.log("Resposta:", data);
+      }
+    } catch (err) {
+      connectStatus.textContent = "❌ Erro inesperado: " + err.message;
+      connectStatus.style.color = "#ef4444";
+    }
+  });
 
   // ============================
   // 📌 Enviar mensagem
   // ============================
   sendBtn?.addEventListener("click", async () => {
-    const phone = phoneInput?.value.trim();
-    const message = messageInput?.value.trim();
+    const phone = phoneInput.value.trim();
+    const message = messageInput.value.trim();
 
     if (!phone || !message) {
       alert("Preencha número e mensagem!");
@@ -82,15 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.error) {
         alert("❌ Erro ao enviar: " + data.error);
-        return;
+      } else {
+        alert("📨 Mensagem enviada!");
+        phoneInput.value = "";
+        messageInput.value = "";
+        loadHistory();
       }
-
-      alert("📨 Mensagem enviada!");
-      if (phoneInput) phoneInput.value = "";
-      if (messageInput) messageInput.value = "";
-      loadHistory();
     } catch (err) {
-      alert("❌ Erro inesperado ao enviar: " + err.message);
+      alert("❌ Erro inesperado ao enviar mensagem.");
     }
   });
 
@@ -98,14 +121,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // 📌 Histórico + Estatísticas
   // ============================
   async function loadHistory() {
-    if (!historyTbody) return;
     historyTbody.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
 
     try {
-      const res = await fetch("/api/messages", { cache: "no-store" });
+      const res = await fetch("/api/messages");
       const data = await res.json();
 
-      if (!Array.isArray(data) || data.length === 0) {
+      if (!data.length) {
         historyTbody.innerHTML = "<tr><td colspan='5'>Nenhuma mensagem encontrada</td></tr>";
         updateStats([]);
         return;
@@ -119,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${msg.phone}</td>
           <td>${msg.message}</td>
           <td>${msg.status}</td>
-          <td>${msg.created_at || msg.createdAt || ""}</td>
+          <td>${msg.created_at || msg.createdAt}</td>
         `;
         historyTbody.appendChild(tr);
       });
@@ -131,20 +153,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateStats(messages) {
-    const get = (sel) => document.querySelector(sel)?.querySelector("span");
-    const total   = messages.length;
-    const sent    = messages.filter(m => m.status === "sent").length;
+    const get = (id) => document.querySelector(id)?.querySelector("span");
+    const total = messages.length;
+    const sent = messages.filter(m => m.status === "sent").length;
     const pending = messages.filter(m => m.status === "pending").length;
-    const failed  = messages.filter(m => m.status === "failed").length;
+    const failed = messages.filter(m => m.status === "failed").length;
 
-    get("#statTotal")  && (get("#statTotal").textContent = total);
-    get("#statSent")   && (get("#statSent").textContent = sent);
-    get("#statPending")&& (get("#statPending").textContent = pending);
-    get("#statFailed") && (get("#statFailed").textContent = failed);
+    get("#statTotal").textContent = total;
+    get("#statSent").textContent = sent;
+    get("#statPending").textContent = pending;
+    get("#statFailed").textContent = failed;
   }
 
   refreshBtn?.addEventListener("click", loadHistory);
-
-  // Carrega histórico ao abrir
   loadHistory();
 });

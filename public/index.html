@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ZapLynx 🚀</title>
   <link rel="stylesheet" href="styles.css"/>
@@ -12,10 +12,18 @@
 
     <!-- QR Code -->
     <section class="card">
-      <h2>Conectar WhatsApp</h2>
+      <h2>Conectar WhatsApp via QR Code</h2>
       <button id="btnQr">Gerar QR Code</button>
       <p id="qrStatus">Aguardando ação...</p>
       <img id="qrImage" alt="QR Code"/>
+    </section>
+
+    <!-- Conectar por número -->
+    <section class="card">
+      <h2>Conectar pelo Número</h2>
+      <input type="text" id="connectNumber" placeholder="Digite o número com DDI/DDD" />
+      <button id="btnConnectNumber">Conectar</button>
+      <p id="connectStatus"></p>
     </section>
 
     <!-- Enviar mensagem -->

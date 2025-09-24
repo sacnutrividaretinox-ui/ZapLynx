@@ -1,19 +1,13 @@
-// ============================
-// 📌 Dependências
-// ============================
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const path = require("path");
-const db = require("./db"); // SQLite (better-sqlite3)
+const db = require("./db"); // SQLite
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ============================
-// 🔑 Credenciais da Z-API
-// ============================
 const ZAPI = {
   instanceId: process.env.ZAPI_INSTANCE_ID || "SEU_INSTANCE_ID",
   token: process.env.ZAPI_TOKEN || "SEU_TOKEN",
@@ -23,17 +17,11 @@ const ZAPI = {
   }
 };
 
-// ============================
-// 🚀 Servir Front-End
-// ============================
+// Servir front
 app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
-// ============================
-// ✅ Rotas
-// ============================
 
 // Status
 app.get("/api/status", (req, res) => {
@@ -44,45 +32,49 @@ app.get("/api/status", (req, res) => {
 app.get("/api/qr", async (req, res) => {
   try {
     const response = await axios.get(`${ZAPI.baseUrl()}/qr-code/image`, {
-      headers: { "Client-Token": ZAPI.clientToken },
-      timeout: 10000
+      headers: { "Client-Token": ZAPI.clientToken }
     });
 
     if (response.data?.value) {
       let qrCode = response.data.value;
-
-      // 🔑 Normaliza: se for só base64 cru, adiciona prefixo
       if (!qrCode.startsWith("data:image")) {
         qrCode = `data:image/png;base64,${qrCode}`;
       }
-
       res.json({ qrCode });
     } else if (response.data?.url) {
-      // Algumas versões da Z-API retornam URL pronto
       res.json({ qrCode: response.data.url });
     } else {
-      res.status(500).json({
-        error: "QR Code não retornado pela Z-API",
-        raw: response.data
-      });
+      res.status(500).json({ error: "QR Code não retornado", raw: response.data });
     }
   } catch (err) {
-    console.error("❌ Erro na rota /api/qr:", err.response?.data || err.message);
-    res.status(500).json({
-      error: "Erro ao gerar QR Code",
-      details: err.response?.data || err.message
-    });
+    res.status(500).json({ error: "Erro ao gerar QR Code", details: err.message });
   }
 });
 
-// Enviar mensagem + salvar no banco
+// Conectar pelo número
+app.post("/api/connect-number", async (req, res) => {
+  try {
+    const { number } = req.body;
+    if (!number) return res.status(400).json({ error: "Número é obrigatório" });
+
+    const response = await axios.post(
+      `${ZAPI.baseUrl()}/connect/phone`, // ajuste se sua versão usar outro endpoint
+      { phone: number },
+      { headers: { "Client-Token": ZAPI.clientToken } }
+    );
+
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao conectar pelo número", details: err.message });
+  }
+});
+
+// Enviar mensagem
 app.post("/api/send-message", async (req, res) => {
   try {
     const { phone, message } = req.body;
 
-    db.prepare(
-      "INSERT INTO messages (phone, message, status) VALUES (?, ?, ?)"
-    ).run(phone, message, "pending");
+    db.prepare("INSERT INTO messages (phone, message, status) VALUES (?, ?, ?)").run(phone, message, "pending");
 
     const response = await axios.post(
       `${ZAPI.baseUrl()}/send-text`,
@@ -90,17 +82,10 @@ app.post("/api/send-message", async (req, res) => {
       { headers: { "Client-Token": ZAPI.clientToken } }
     );
 
-    db.prepare(
-      "UPDATE messages SET status = ? WHERE phone = ? AND message = ?"
-    ).run("sent", phone, message);
-
+    db.prepare("UPDATE messages SET status = ? WHERE phone = ? AND message = ?").run("sent", phone, message);
     res.json(response.data);
   } catch (err) {
-    console.error("❌ Erro no envio:", err.response?.data || err.message);
-    res.status(500).json({
-      error: err.message,
-      details: err.response?.data || null
-    });
+    res.status(500).json({ error: err.message, details: err.response?.data || null });
   }
 });
 
@@ -114,10 +99,5 @@ app.get("/api/messages", (req, res) => {
   }
 });
 
-// ============================
-// 🚀 Inicializar servidor
-// ============================
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));

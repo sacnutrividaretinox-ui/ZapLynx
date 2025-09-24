@@ -7,198 +7,97 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Topbar -->
-  <header class="topbar">
-    <button id="menuToggle" aria-label="Abrir menu" class="icon-btn">☰</button>
-    <h1>📲 WhatsApp Micro-SaaS</h1>
-    <div id="connStatus" class="badge badge-gray">Checando...</div>
-  </header>
-
-  <div class="layout">
+  <div class="app-container">
     <!-- Sidebar -->
-    <aside id="sidebar">
-      <nav>
-        <a href="#inicio" class="nav-link">🏠 Início</a>
-        <a href="#dashboard" class="nav-link">📊 Dashboard</a>
-        <a href="#extrair-contatos" class="nav-link">👥 Extrair Contatos</a>
-        <a href="#perfil" class="nav-link">👤 Perfil</a>
-        <a href="#historico" class="nav-link">⏱ Histórico</a>
-        <a href="#templates" class="nav-link">📄 Templates</a>
-      </nav>
+    <aside class="sidebar">
+      <h2>Menu</h2>
+      <ul>
+        <li><button onclick="showSection('inicio')">Início</button></li>
+        <li><button onclick="showSection('dashboard')">Dashboard</button></li>
+        <li><button onclick="showSection('extrair')">Extrair Contatos</button></li>
+        <li><button onclick="showSection('perfil')">Perfil</button></li>
+        <li><button onclick="showSection('historico')">Histórico</button></li>
+        <li><button onclick="showSection('templates')">Templates</button></li>
+      </ul>
     </aside>
 
-    <div id="overlay"></div>
-
     <!-- Conteúdo principal -->
-    <main>
-      <section id="inicio" class="card">
-        <h2>Início</h2>
-        <p>🎥 Vídeos tutoriais e materiais de ajuda.</p>
+    <main class="content">
+      <!-- Início -->
+      <section id="inicio" class="active">
+        <h2>Bem-vindo</h2>
+        <p>Aqui você pode ver vídeos tutoriais e instruções.</p>
       </section>
 
-      <section id="dashboard" class="card" hidden>
+      <!-- Dashboard -->
+      <section id="dashboard">
         <h2>Dashboard</h2>
-        <canvas id="msgChart" width="400" height="200"></canvas>
+        <p>Gráficos e estatísticas das mensagens enviadas.</p>
       </section>
 
-      <section id="extrair-contatos" class="card" hidden>
+      <!-- Extrair contatos -->
+      <section id="extrair">
         <h2>Extrair Contatos</h2>
-        <button class="btn">Iniciar extração</button>
+        <p>Funcionalidade para capturar contatos de comunidades.</p>
       </section>
 
-      <section id="perfil" class="card" hidden>
+      <!-- Perfil / Conectar Número -->
+      <section id="perfil">
         <h2>Perfil / Conectar Número</h2>
-        <button id="generateQrBtn" class="btn">Gerar QR Code</button>
-        <div id="qrContainer"><img id="qrImage" hidden /></div>
-      </section>
-
-      <section id="historico" class="card" hidden>
-        <h2>Histórico</h2>
-        <div class="row">
-          <label for="campaignFilter">Filtrar por campanha:</label>
-          <select id="campaignFilter"></select>
-          <button id="loadHistory" class="btn">🔄 Atualizar</button>
+        <button id="btnGerarQr" class="btn-primary">Gerar QR Code</button>
+        <div style="margin-top:20px;">
+          <img id="qrImage" alt="QR Code aparecerá aqui" style="max-width:300px;" />
         </div>
-        <div id="historyLogs" class="terminal"></div>
-        <h3>📊 Resumo da campanha</h3>
-        <canvas id="campaignChart" width="400" height="200"></canvas>
       </section>
 
-      <section id="templates" class="card" hidden>
-        <h2>Modelos de Mensagem</h2>
-        <input id="tplName" placeholder="Nome do modelo" />
-        <button id="saveTpl" class="btn">Salvar</button>
-        <select id="tplSelect"></select>
-        <button id="deleteTpl" class="btn btn-danger">Excluir</button>
-        <button id="applyTpl" class="btn">Aplicar</button>
+      <!-- Histórico -->
+      <section id="historico">
+        <h2>Histórico</h2>
+        <p>Logs de mensagens disparadas, agrupadas por campanhas.</p>
+      </section>
+
+      <!-- Templates -->
+      <section id="templates">
+        <h2>Templates</h2>
+        <p>Modelos de mensagens salvas para reuso.</p>
       </section>
     </main>
   </div>
 
-  <!-- Botão de suporte -->
-  <button id="supportBtn" class="support-btn">💬</button>
+  <!-- Botão flutuante de suporte -->
+  <button id="btnSuporte" class="btn-suporte">💬 Suporte</button>
 
-  <footer class="foot">Feito para disparos controlados. Respeite o opt-in.</footer>
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    const links = document.querySelectorAll("#sidebar .nav-link");
-    const sections = document.querySelectorAll("main section");
-
+    // Alterna entre seções
     function showSection(id) {
-      sections.forEach(s => { s.hidden = true; s.classList.remove("active"); });
-      links.forEach(l => l.classList.remove("active"));
-
-      const target = document.getElementById(id);
-      if (target) {
-        target.hidden = false;
-        target.classList.add("active");
-      }
-      const link = document.querySelector(`#sidebar .nav-link[href="#${id}"]`);
-      if (link) link.classList.add("active");
-
-      if (id === "dashboard") loadDashboard();
-      if (id === "historico") initHistory();
+      document.querySelectorAll("main section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
     }
 
-    links.forEach(l => l.addEventListener("click", e => {
-      e.preventDefault();
-      showSection(l.getAttribute("href").replace("#", ""));
-      sidebar.classList.remove("open");
-      overlay.style.display = "none";
-    }));
+    // Evento do botão Gerar QR Code
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.getElementById("btnGerarQr");
+      const img = document.getElementById("qrImage");
 
-    showSection("inicio");
+      if (btn) {
+        btn.addEventListener("click", async () => {
+          img.src = "";
+          img.alt = "Gerando QR Code...";
 
-    // ===== Dashboard =====
-    let chartInstance = null;
-    async function loadDashboard() {
-      const res = await fetch("/api/dashboard");
-      const data = await res.json();
-      const ctx = document.getElementById("msgChart").getContext("2d");
+          try {
+            const response = await fetch("/api/qr");
+            if (!response.ok) throw new Error("Falha ao buscar QR");
 
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Hoje", "Ontem", "7 dias", "30 dias", "1 ano"],
-          datasets: [{ data: [data.hoje, data.ontem, data.seteDias, data.trintaDias, data.umAno],
-            backgroundColor: ["#2ea043","#58a6ff","#ff7b72","#e85aad","#f0ad4e"] }]
-        },
-        options: { responsive: true, plugins: { legend: { display:false } } }
-      });
-    }
-
-    // ===== Histórico =====
-    async function loadCampaigns() {
-      const res = await fetch("/api/campanhas");
-      const campaigns = await res.json();
-      const select = document.getElementById("campaignFilter");
-      select.innerHTML = '<option value="all">Todas</option>';
-      campaigns.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c; opt.textContent = c; select.appendChild(opt);
-      });
-    }
-
-    async function loadHistory() {
-      const res = await fetch("/api/historico");
-      const grouped = await res.json();
-      const container = document.getElementById("historyLogs");
-      const filter = document.getElementById("campaignFilter").value;
-      container.innerHTML = "";
-
-      Object.keys(grouped).forEach(campanha => {
-        if (filter !== "all" && campanha !== filter) return;
-        const title = document.createElement("h3");
-        title.textContent = `📌 Campanha: ${campanha}`;
-        container.appendChild(title);
-
-        const ul = document.createElement("ul");
-        grouped[campanha].forEach(log => {
-          const li = document.createElement("li");
-          li.textContent = `[${log.criado_em}] ${log.mensagem} - ${log.status}`;
-          ul.appendChild(li);
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            img.src = url;
+            img.alt = "QR Code pronto para escanear";
+          } catch (err) {
+            console.error("Erro ao carregar QR:", err);
+            img.alt = "Erro ao gerar QR Code";
+          }
         });
-        container.appendChild(ul);
-      });
-
-      renderCampaignChart(filter);
-    }
-
-    let campaignChartInstance = null;
-    async function renderCampaignChart(campanha) {
-      const ctx = document.getElementById("campaignChart").getContext("2d");
-      if (campaignChartInstance) campaignChartInstance.destroy();
-
-      if (campanha === "all") return ctx.clearRect(0,0,400,200);
-
-      const res = await fetch(`/api/historico/${encodeURIComponent(campanha)}`);
-      const data = await res.json();
-      const labels = data.map(d => d.status);
-      const values = data.map(d => d.total);
-
-      campaignChartInstance = new Chart(ctx, {
-        type: "bar",
-        data: { labels, datasets:[{ data: values, backgroundColor:["#2ea043","#f85149","#58a6ff","#e85aad"] }] },
-        options: { responsive:true, plugins:{legend:{display:false}} }
-      });
-    }
-
-    async function initHistory() {
-      await loadCampaigns();
-      await loadHistory();
-    }
-
-    document.getElementById("loadHistory").addEventListener("click", loadHistory);
-    document.getElementById("campaignFilter").addEventListener("change", loadHistory);
-
-    // ===== Suporte =====
-    document.getElementById("supportBtn").addEventListener("click", () => {
-      window.open("https://wa.me/5500000000000", "_blank");
+      }
     });
   </script>
 </body>

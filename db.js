@@ -1,24 +1,14 @@
 // db.js
-const Database = require("better-sqlite3");
-const path = require("path");
+import { Low } from "lowdb";
+import { JSONFile } from "lowdb/node";
 
-// Caminho para o arquivo do banco
-const dbPath = path.join(__dirname, "data.db");
+// Definição do arquivo JSON onde os dados ficarão
+const adapter = new JSONFile("db.json");
+const db = new Low(adapter, { instancias: [], mensagens: [] });
 
-// Conectar banco
-const db = new Database(dbPath);
+// Inicializa o banco
+await db.read();
+db.data ||= { instancias: [], mensagens: [] };
+await db.write();
 
-// Criar tabela se não existir
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    phone TEXT NOT NULL,
-    message TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`).run();
-
-console.log("✅ SQLite pronto em:", dbPath);
-
-module.exports = db;
+export default db;

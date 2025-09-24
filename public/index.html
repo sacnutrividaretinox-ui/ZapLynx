@@ -4,184 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
-  <style>
-    body { background: #0f172a; font-family: Arial, sans-serif; color: #fff; text-align: center; }
-    h1 { color: #38bdf8; }
-    .card { background: #1e293b; margin: 15px auto; padding: 20px; border-radius: 12px; width: 350px; }
-    input, textarea, select { width: 100%; margin: 8px 0; padding: 10px; border-radius: 6px; border: none; }
-    button { width: 100%; padding: 10px; border: none; border-radius: 6px; background: #22c55e; color: white; font-weight: bold; cursor: pointer; }
-    button:hover { background: #16a34a; }
-    img { margin-top: 10px; border-radius: 8px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 10px; }
-    .stat { background: #0f172a; padding: 10px; border-radius: 8px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 6px; border-bottom: 1px solid #334155; font-size: 13px; text-align: left; }
-    .success { color: #22c55e; font-weight: bold; }
-    .fail { color: #ef4444; font-weight: bold; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h1>ZapLynx 🚀</h1>
 
-  <!-- Conexão -->
-  <div class="card">
-    <h3>Conectar WhatsApp</h3>
-    <select id="connectMode">
-      <option value="qr">QR Code</option>
-      <option value="phone">Número (Phone Code)</option>
-    </select>
-    <div id="phoneInput" style="display:none;">
-      <input type="text" id="phoneConnect" placeholder="Número com DDI/DDD">
-    </div>
-    <button onclick="connect()">Conectar</button>
+  <!-- Conectar WhatsApp -->
+  <section>
+    <h2>Conectar WhatsApp</h2>
+    <input type="text" id="instanceName" placeholder="Nome da instância">
+    <input type="text" id="instanceDesc" placeholder="Descrição">
+    <button onclick="addInstance()">Criar Instância</button>
     <p id="connectStatus"></p>
-    <img id="qrImage" style="display:none;" width="250">
-  </div>
+  </section>
 
-  <!-- Enviar mensagem única -->
-  <div class="card">
-    <h3>Enviar Mensagem</h3>
-    <input type="text" id="phone" placeholder="Número (com DDI/DDD)">
+  <hr>
+
+  <!-- Enviar Mensagem -->
+  <section>
+    <h2>Enviar Mensagem</h2>
+    <input type="text" id="phone" placeholder="Número com DDI/DD">
     <textarea id="message" placeholder="Digite sua mensagem"></textarea>
     <button onclick="sendMessage()">Enviar</button>
     <p id="sendStatus"></p>
-  </div>
+  </section>
 
-  <!-- Enviar em massa -->
-  <div class="card">
-    <h3>📤 Disparo em Massa</h3>
-    <textarea id="bulkPhones" placeholder="Cole os números separados por vírgula"></textarea>
-    <textarea id="bulkMessage" placeholder="Mensagem para todos"></textarea>
-    <button onclick="sendBulk()">Enviar em Massa</button>
-    <p id="bulkStatus"></p>
-  </div>
-
-  <!-- Estatísticas -->
-  <div class="card">
-    <h3>📊 Estatísticas</h3>
-    <div class="stats-grid">
-      <div class="stat">Total: <span id="statTotal">0</span></div>
-      <div class="stat">✅ Sucesso: <span id="statSuccess">0</span></div>
-      <div class="stat">⏳ Pendentes: <span id="statPending">0</span></div>
-      <div class="stat">❌ Falhas: <span id="statFail">0</span></div>
-    </div>
-  </div>
+  <hr>
 
   <!-- Histórico -->
-  <div class="card">
-    <h3>📜 Histórico</h3>
-    <table>
-      <thead>
-        <tr><th>Telefone</th><th>Mensagem</th><th>Status</th><th>Data/Hora</th></tr>
-      </thead>
-      <tbody id="historyTable"></tbody>
-    </table>
-  </div>
+  <section>
+    <h2>📜 Histórico de Mensagens</h2>
+    <button onclick="loadMessages()">🔄 Atualizar Histórico</button>
+    <ul id="messageList"></ul>
+  </section>
 
   <script>
-    const connectMode = document.getElementById("connectMode");
-    const phoneInput = document.getElementById("phoneInput");
-    connectMode.addEventListener("change", () => {
-      phoneInput.style.display = connectMode.value === "phone" ? "block" : "none";
-      document.getElementById("qrImage").style.display = "none";
-      document.getElementById("connectStatus").innerText = "";
-    });
+    // Criar instância
+    async function addInstance() {
+      const nome = document.getElementById("instanceName").value;
+      const descricao = document.getElementById("instanceDesc").value;
 
-    async function connect() {
-      const mode = connectMode.value;
-      document.getElementById("connectStatus").innerText = "⏳ Conectando...";
+      const res = await fetch("/instancia", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, descricao })
+      });
 
-      if (mode === "qr") {
-        const res = await fetch("/api/qrcode");
-        const data = await res.json();
-        if (data.value) {
-          document.getElementById("qrImage").src = data.value;
-          document.getElementById("qrImage").style.display = "block";
-          document.getElementById("connectStatus").innerText = "✅ QR Code gerado!";
-        } else {
-          document.getElementById("connectStatus").innerText = "❌ Erro ao gerar QR.";
-        }
-      } else {
-        const phone = document.getElementById("phoneConnect").value.trim();
-        if (!phone) return alert("Digite o número!");
-        const res = await fetch(`/api/phone-code/${phone}`);
-        const data = await res.json();
-        if (data.code) {
-          document.getElementById("connectStatus").innerText = "📲 Código: " + data.code;
-        } else {
-          document.getElementById("connectStatus").innerText = "❌ Erro: " + (data.error || "Falha");
-        }
-      }
+      const data = await res.json();
+      document.getElementById("connectStatus").innerText = "Instância criada!";
+      console.log(data);
     }
 
+    // Enviar mensagem
     async function sendMessage() {
-      const phone = document.getElementById("phone").value.trim();
-      const message = document.getElementById("message").value.trim();
-      if (!phone || !message) return alert("Preencha número e mensagem!");
+      const phone = document.getElementById("phone").value;
+      const message = document.getElementById("message").value;
 
-      document.getElementById("sendStatus").innerText = "⏳ Enviando...";
-      const res = await fetch("/api/send", {
+      const res = await fetch("/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, message })
       });
+
       const data = await res.json();
-      document.getElementById("sendStatus").innerText = data.success ? "✅ Enviado!" : "❌ Erro ao enviar.";
-      loadHistory();
+      document.getElementById("sendStatus").innerText = "Mensagem enviada!";
+      console.log(data);
+
+      loadMessages(); // Atualiza o histórico automaticamente
     }
 
-    async function sendBulk() {
-      const rawPhones = document.getElementById("bulkPhones").value.trim();
-      const message = document.getElementById("bulkMessage").value.trim();
-      const bulkStatus = document.getElementById("bulkStatus");
+    // Carregar histórico
+    async function loadMessages() {
+      const res = await fetch("/mensagens");
+      const mensagens = await res.json();
 
-      if (!rawPhones || !message) {
-        alert("Preencha números e mensagem!");
-        return;
-      }
-
-      const phones = rawPhones.split(",").map(p => p.trim()).filter(p => p);
-      bulkStatus.innerText = `⏳ Iniciando disparo para ${phones.length} números...`;
-
-      const res = await fetch("/api/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phones, message })
-      });
-
-      const data = await res.json();
-      bulkStatus.innerText = data.success ? "🚀 Disparo em andamento..." : "❌ Erro no disparo.";
-      loadHistory();
-    }
-
-    async function loadStats() {
-      const res = await fetch("/api/stats");
-      const data = await res.json();
-      document.getElementById("statTotal").innerText = data.total;
-      document.getElementById("statSuccess").innerText = data.success;
-      document.getElementById("statPending").innerText = data.pending;
-      document.getElementById("statFail").innerText = data.fail;
-    }
-
-    async function loadHistory() {
-      const res = await fetch("/api/history");
-      const data = await res.json();
-      const tbody = document.getElementById("historyTable");
-      tbody.innerHTML = "";
-      data.forEach(log => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${log.phone}</td>
-          <td>${log.message}</td>
-          <td class="${log.status === "success" ? "success" : "fail"}">${log.status}</td>
-          <td>${log.time}</td>
-        `;
-        tbody.appendChild(tr);
+      const list = document.getElementById("messageList");
+      list.innerHTML = "";
+      mensagens.forEach(msg => {
+        const li = document.createElement("li");
+        li.innerText = `${msg.phone}: ${msg.message} (enviado em ${new Date(msg.enviadoEm).toLocaleString()})`;
+        list.appendChild(li);
       });
     }
 
-    setInterval(() => { loadStats(); loadHistory(); }, 3000);
-    loadStats(); loadHistory();
+    // Carregar histórico ao abrir a página
+    loadMessages();
   </script>
 </body>
 </html>

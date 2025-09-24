@@ -32,12 +32,12 @@
 
     <hr style="margin:30px 0;">
 
-    <!-- Conectar via número (referência interna) -->
+    <!-- Conectar via número -->
     <section>
-      <h2>📞 Definir número principal</h2>
+      <h2>📞 Conectar com número</h2>
       <input id="phoneNumber" placeholder="Número com DDD" />
-      <button onclick="conectarNumero()">Salvar Número</button>
-      <p id="statusNumero"></p>
+      <button onclick="conectarNumero()">Conectar Número</button>
+      <p id="statusNumero">❌ Não conectado</p>
     </section>
   </main>
 
@@ -51,7 +51,7 @@
             `<img src="${data.qrCode}" style="max-width:250px;">`;
         } else {
           document.getElementById("qrcodeArea").innerHTML =
-            `<p style="color:red;">❌ Nenhum QR retornado</p>`;
+            `<p style="color:red;">❌ ${data.error || "Nenhum QR retornado"}</p>`;
         }
       } catch (err) {
         document.getElementById("qrcodeArea").innerHTML =
@@ -74,18 +74,27 @@
         });
         const data = await res.json();
 
-        if (data.success) {
-          document.getElementById("statusNumero").innerText =
-            `✅ Número salvo: ${data.phone}`;
+        if (data.conectado) {
+          document.getElementById("statusNumero").innerText = `✅ Conectado: ${data.phone}`;
         } else {
-          document.getElementById("statusNumero").innerText =
-            "❌ Erro ao salvar número";
+          document.getElementById("statusNumero").innerText = "❌ Não conectado";
         }
       } catch (err) {
         document.getElementById("statusNumero").innerText =
           `❌ Erro: ${err.message}`;
       }
     }
+
+    // Checar status ao carregar
+    window.onload = async () => {
+      const res = await fetch("/api/status-number");
+      const data = await res.json();
+      if (data.conectado) {
+        document.getElementById("statusNumero").innerText = `✅ Conectado: ${data.phone}`;
+      } else {
+        document.getElementById("statusNumero").innerText = "❌ Não conectado";
+      }
+    };
   </script>
 </body>
 </html>

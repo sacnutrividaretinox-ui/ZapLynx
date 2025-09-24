@@ -10,54 +10,54 @@
   <div class="app-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <h2>Menu</h2>
+      <h2>ZapLynx</h2>
       <ul>
-        <li><button onclick="showSection('inicio')">Início</button></li>
-        <li><button onclick="showSection('dashboard')">Dashboard</button></li>
-        <li><button onclick="showSection('extrair')">Extrair Contatos</button></li>
-        <li><button onclick="showSection('perfil')">Perfil</button></li>
-        <li><button onclick="showSection('historico')">Histórico</button></li>
-        <li><button onclick="showSection('templates')">Templates</button></li>
+        <li><button onclick="showSection('inicio')">🏠 Início</button></li>
+        <li><button onclick="showSection('dashboard')">📊 Dashboard</button></li>
+        <li><button onclick="showSection('extrair')">📥 Extrair Contatos</button></li>
+        <li><button onclick="showSection('perfil')">📱 Perfil</button></li>
+        <li><button onclick="showSection('historico')">📜 Histórico</button></li>
+        <li><button onclick="showSection('templates')">📝 Templates</button></li>
       </ul>
     </aside>
 
     <!-- Conteúdo principal -->
     <main class="content">
       <!-- Início -->
-      <section id="inicio" class="active">
-        <h2>Bem-vindo</h2>
-        <p>Aqui você pode ver vídeos tutoriais e instruções.</p>
+      <section id="inicio" class="active card">
+        <h2>Bem-vindo 👋</h2>
+        <p>Aqui você encontra vídeos tutoriais e instruções.</p>
       </section>
 
       <!-- Dashboard -->
-      <section id="dashboard">
+      <section id="dashboard" class="card">
         <h2>Dashboard</h2>
-        <p>Gráficos e estatísticas das mensagens enviadas.</p>
+        <p>Estatísticas das mensagens enviadas.</p>
       </section>
 
       <!-- Extrair contatos -->
-      <section id="extrair">
+      <section id="extrair" class="card">
         <h2>Extrair Contatos</h2>
         <p>Funcionalidade para capturar contatos de comunidades.</p>
       </section>
 
       <!-- Perfil / Conectar Número -->
-      <section id="perfil">
+      <section id="perfil" class="card">
         <h2>Perfil / Conectar Número</h2>
         <button id="btnGerarQr" class="btn-primary">Gerar QR Code</button>
-        <div style="margin-top:20px;">
-          <img id="qrImage" alt="QR Code aparecerá aqui" style="max-width:300px;" />
+        <div class="qr-container">
+          <img id="qrImage" alt="QR Code aparecerá aqui" />
         </div>
       </section>
 
       <!-- Histórico -->
-      <section id="historico">
+      <section id="historico" class="card">
         <h2>Histórico</h2>
         <p>Logs de mensagens disparadas, agrupadas por campanhas.</p>
       </section>
 
       <!-- Templates -->
-      <section id="templates">
+      <section id="templates" class="card">
         <h2>Templates</h2>
         <p>Modelos de mensagens salvas para reuso.</p>
       </section>

@@ -1,89 +1,69 @@
 const express = require("express");
-const cors = require("cors");
 const axios = require("axios");
+const cors = require("cors");
 const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"))); // serve arquivos da pasta public
+app.use(express.static(path.join(__dirname, "public"))); // serve frontend
 
-// 🔑 Variáveis do Railway (.env)
-const { ZAPI_INSTANCE_ID, ZAPI_TOKEN, ZAPI_CLIENT_TOKEN, ZAPI_MODE } = process.env;
+// 🔑 Variáveis de ambiente (configure no Railway)
+const ZAPI_INSTANCE = process.env.ZAPI_INSTANCE_ID;
+const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
+const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN;
 
-// Função para montar a URL correta da API Z-API
-function getZapiUrl(type) {
-  if (ZAPI_MODE === "cloud") {
-    // Novo modelo Cloud
-    if (type === "qr") return `https://api.z-api.io/instances/qr-code/${ZAPI_INSTANCE_ID}/${ZAPI_TOKEN}`;
-    if (type === "status") return `https://api.z-api.io/instances/status/${ZAPI_INSTANCE_ID}/${ZAPI_TOKEN}`;
-  } else {
-    // Modelo padrão/antigo
-    if (type === "qr") return `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/qr-code`;
-    if (type === "status") return `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/status`;
-  }
-  return null;
-}
-
-// Config padrão do axios para enviar client-token
-function getAxiosConfig() {
-  return {
-    headers: {
-      "client-token": ZAPI_CLIENT_TOKEN || "",
-    },
-  };
-}
-
-// ✅ Rota para gerar QR Code
-app.get("/api/generate-qr", async (req, res) => {
+// ✅ Rota: Gerar QR Code
+app.get("/api/qrcode", async (req, res) => {
   try {
-    const url = getZapiUrl("qr");
-    if (!url) throw new Error("URL de QR Code não encontrada (verifique ZAPI_MODE)");
-
-    const response = await axios.get(url, getAxiosConfig());
-    console.log("Resposta QR:", response.data);
-
-    // Pode vir como base64 ou link
-    let qrCode = response.data.qrCode || response.data.qr || response.data.image;
-    if (qrCode && !qrCode.startsWith("data:image")) {
-      qrCode = `data:image/png;base64,${qrCode}`;
-    }
-
-    if (!qrCode) {
-      return res.json({ error: "Nenhum QR retornado pela Z-API", raw: response.data });
-    }
-
-    res.json({ qrCode });
-  } catch (err) {
-    console.error("Erro ao gerar QR Code:", err.response?.data || err.message);
-    res.status(500).json({
-      error: err.message,
-      details: err.response?.data || "Erro desconhecido",
+    const url = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/qr-code/image`;
+    const response = await axios.get(url, {
+      headers: { "Client-Token": ZAPI_CLIENT_TOKEN }
     });
-  }
-});
-
-// ✅ Rota para checar status da instância
-app.get("/api/status", async (req, res) => {
-  try {
-    const url = getZapiUrl("status");
-    if (!url) throw new Error("URL de Status não encontrada (verifique ZAPI_MODE)");
-
-    const response = await axios.get(url, getAxiosConfig());
-    console.log("Resposta Status:", response.data);
-
     res.json(response.data);
   } catch (err) {
-    console.error("Erro ao checar Status:", err.response?.data || err.message);
-    res.status(500).json({
-      error: err.message,
-      details: err.response?.data || "Erro desconhecido",
-    });
+    console.error("Erro ao gerar QR Code:", err.response?.data || err.message);
+    res.status(500).json({ error: "Erro ao gerar QR Code" });
   }
 });
 
-// 🚀 Start server
+// ✅ Rota: Conectar número
+app.post("/api/connect", async (req, res) => {
+  const { numero } = req.body;
+  if (!numero) return res.status(400).json({ error: "Número não informado" });
+
+  try {
+    const url = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/phone/disconnect`;
+    await axios.post(url, {}, { headers: { "Client-Token": ZAPI_CLIENT_TOKEN } });
+
+    const statusUrl = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/status`;
+    const statusRes = await axios.get(statusUrl, {
+      headers: { "Client-Token": ZAPI_CLIENT_TOKEN }
+    });
+
+    res.json({ success: true, data: statusRes.data });
+  } catch (err) {
+    console.error("Erro ao conectar número:", err.response?.data || err.message);
+    res.status(500).json({ error: "Erro ao conectar número" });
+  }
+});
+
+// ✅ Rota: Checar Status
+app.get("/api/status", async (req, res) => {
+  try {
+    const url = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/status`;
+    const response = await axios.get(url, {
+      headers: { "Client-Token": ZAPI_CLIENT_TOKEN }
+    });
+    res.json(response.data);
+  } catch (err) {
+    console.error("Erro ao checar status:", err.response?.data || err.message);
+    res.status(500).json({ error: "Erro ao checar status" });
+  }
+});
+
+// ✅ Inicializar servidor
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });

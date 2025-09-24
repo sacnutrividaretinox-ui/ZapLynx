@@ -1,104 +1,183 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZapLynx 🚀</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #0b1221; color: white; text-align: center; }
-    .card { background: #1c253c; padding: 20px; margin: 20px auto; border-radius: 12px; width: 350px; }
-    input, select, button { margin: 8px; padding: 10px; border-radius: 8px; border: none; width: 90%; }
-    button { background: #28a745; color: white; cursor: pointer; font-weight: bold; }
-    button:hover { background: #218838; }
-    img { margin-top: 10px; max-width: 250px; }
-    .msg { font-size: 14px; margin-top: 8px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0a0f1c;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #3ba3ff;
+    }
+    .card {
+      background: #141c2c;
+      padding: 20px;
+      border-radius: 12px;
+      width: 340px;
+      margin: 15px 0;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+    }
+    select, input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background: #1e90ff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0d6efd;
+    }
+    .qr {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .qr img {
+      width: 200px;
+      height: 200px;
+    }
+    .status {
+      font-size: 14px;
+      margin-top: 8px;
+      color: #ffcc00;
+    }
+    .error {
+      color: #ff4444;
+      font-size: 14px;
+    }
+    .success {
+      color: #44ff44;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <h1>ZapLynx 🚀</h1>
 
+  <!-- Bloco de Conexão -->
   <div class="card">
     <h2>Conectar WhatsApp</h2>
-    <select id="mode">
-      <option value="qr">QR Code</option>
+    <select id="connectMode">
+      <option value="qrcode">QR Code</option>
       <option value="pairing">Número (Pairing Code)</option>
     </select>
-    <input type="text" id="phoneConnect" placeholder="Digite o número (com DDI/DDD)" style="display:none;">
+    <input type="text" id="phoneInput" placeholder="Número com DDI/DDD" style="display:none;">
     <button onclick="connect()">Conectar</button>
-    <div id="connectResult" class="msg"></div>
-    <div id="qrContainer"></div>
+    <div class="qr" id="qrContainer"></div>
+    <p id="connectStatus" class="status">⏳ Aguardando conexão...</p>
   </div>
 
+  <!-- Bloco de Envio -->
   <div class="card">
     <h2>Enviar Mensagem</h2>
-    <input type="text" id="phone" placeholder="Número (com DDI/DDD)">
-    <textarea id="message" placeholder="Digite sua mensagem"></textarea>
+    <input type="text" id="sendPhone" placeholder="Número (com DDI/DDD)">
+    <textarea id="sendMessage" placeholder="Digite sua mensagem"></textarea>
     <button onclick="sendMessage()">Enviar</button>
-    <div id="result" class="msg"></div>
+    <p id="sendStatus" class="status">⏳ Aguardando envio...</p>
   </div>
 
   <script>
-    const modeSelect = document.getElementById("mode");
-    const phoneInput = document.getElementById("phoneConnect");
+    const qrContainer = document.getElementById("qrContainer");
+    const connectStatus = document.getElementById("connectStatus");
+    const phoneInput = document.getElementById("phoneInput");
+    const connectMode = document.getElementById("connectMode");
 
-    modeSelect.addEventListener("change", () => {
-      phoneInput.style.display = modeSelect.value === "pairing" ? "block" : "none";
+    // Mostrar ou esconder campo de número dependendo do modo
+    connectMode.addEventListener("change", () => {
+      if (connectMode.value === "pairing") {
+        phoneInput.style.display = "block";
+      } else {
+        phoneInput.style.display = "none";
+      }
+      qrContainer.innerHTML = "";
+      connectStatus.textContent = "⏳ Aguardando conexão...";
     });
 
     async function connect() {
-      const mode = modeSelect.value;
-      const connectResult = document.getElementById("connectResult");
-      const qrContainer = document.getElementById("qrContainer");
       qrContainer.innerHTML = "";
-      connectResult.innerText = "Aguardando resposta...";
+      connectStatus.textContent = "⏳ Conectando...";
 
       try {
-        if (mode === "qr") {
+        if (connectMode.value === "qrcode") {
           const res = await fetch("/api/qrcode");
+          if (!res.ok) throw new Error("Erro ao buscar QR Code");
           const data = await res.json();
-          if (data.qrCode) {
-            qrContainer.innerHTML = `<img src="data:image/png;base64,${data.qrCode}" alt="QR Code">`;
-            connectResult.innerText = "✅ QR Code gerado!";
+          if (data?.value) {
+            qrContainer.innerHTML = `<img src="${data.value}" alt="QR Code">`;
+            connectStatus.textContent = "✅ QR Code gerado!";
+            connectStatus.className = "success";
           } else {
-            connectResult.innerText = "⚠️ Nenhum QR retornado.";
+            connectStatus.textContent = "⚠️ Nenhum QR retornado.";
+            connectStatus.className = "error";
           }
         } else {
-          const phone = document.getElementById("phoneConnect").value.trim();
+          const phone = document.getElementById("phoneInput").value.trim();
+          if (!phone) {
+            connectStatus.textContent = "⚠️ Digite um número válido.";
+            connectStatus.className = "error";
+            return;
+          }
           const res = await fetch("/api/pairing", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ phone })
           });
+          if (!res.ok) throw new Error("Erro ao solicitar Pairing Code");
           const data = await res.json();
-          if (data.pairingCode) {
-            connectResult.innerText = "✅ Pairing Code: " + data.pairingCode;
+          if (data?.code) {
+            connectStatus.textContent = `✅ Pairing Code: ${data.code}`;
+            connectStatus.className = "success";
           } else {
-            connectResult.innerText = "⚠️ Nenhum código retornado.";
+            connectStatus.textContent = "⚠️ Nenhum código retornado.";
+            connectStatus.className = "error";
           }
         }
       } catch (err) {
-        connectResult.innerText = "❌ Erro na conexão.";
-        console.error(err);
+        connectStatus.textContent = "❌ Erro: " + err.message;
+        connectStatus.className = "error";
       }
     }
 
     async function sendMessage() {
-      const phone = document.getElementById("phone").value.trim();
-      const message = document.getElementById("message").value.trim();
-      const result = document.getElementById("result");
-      result.innerText = "Aguardando envio...";
+      const phone = document.getElementById("sendPhone").value.trim();
+      const message = document.getElementById("sendMessage").value.trim();
+      const sendStatus = document.getElementById("sendStatus");
 
+      if (!phone || !message) {
+        sendStatus.textContent = "⚠️ Preencha número e mensagem!";
+        sendStatus.className = "error";
+        return;
+      }
+
+      sendStatus.textContent = "⏳ Enviando...";
       try {
         const res = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone, message })
         });
+        if (!res.ok) throw new Error("Erro ao enviar mensagem");
         const data = await res.json();
-        result.innerText = "✅ Mensagem enviada!";
+        sendStatus.textContent = "✅ Mensagem enviada!";
+        sendStatus.className = "success";
       } catch (err) {
-        result.innerText = "❌ Erro ao enviar mensagem.";
-        console.error(err);
+        sendStatus.textContent = "❌ Erro: " + err.message;
+        sendStatus.className = "error";
       }
     }
   </script>

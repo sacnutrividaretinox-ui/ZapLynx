@@ -9,7 +9,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ===== Banco de Dados (Better-SQLite3) =====
+// ============================
+// 🔹 Banco de Dados (Better-SQLite3)
+// ============================
 const db = new Database(path.join(__dirname, "data.db"));
 
 db.prepare(`
@@ -22,13 +24,16 @@ db.prepare(`
   )
 `).run();
 
-// ===== Endpoint: enviar mensagem (exemplo mock) =====
+// ============================
+// 🔹 Endpoint: Enviar mensagem (exemplo mock)
+// ============================
 app.post("/send", (req, res) => {
   const { message, campanha } = req.body;
 
   try {
-    db.prepare("INSERT INTO logs (campanha, mensagem, status) VALUES (?, ?, ?)")
-      .run(campanha || "sem-campanha", message, "enviado");
+    db.prepare(
+      "INSERT INTO logs (campanha, mensagem, status) VALUES (?, ?, ?)"
+    ).run(campanha || "sem-campanha", message, "enviado");
 
     res.json({ ok: true });
   } catch (err) {
@@ -37,7 +42,9 @@ app.post("/send", (req, res) => {
   }
 });
 
-// ===== Endpoint: QR Code da Z-API =====
+// ============================
+// 🔹 Endpoint: QR Code da Z-API
+// ============================
 app.get("/api/qr", async (req, res) => {
   try {
     const { ZAPI_INSTANCE_ID, ZAPI_TOKEN } = process.env;
@@ -59,7 +66,9 @@ app.get("/api/qr", async (req, res) => {
   }
 });
 
-// ===== Endpoint: Dashboard =====
+// ============================
+// 🔹 Endpoint: Dashboard
+// ============================
 app.get("/api/dashboard", (req, res) => {
   try {
     const stats = {
@@ -71,21 +80,27 @@ app.get("/api/dashboard", (req, res) => {
     };
     res.json(stats);
   } catch (err) {
+    console.error("Erro no dashboard:", err);
     res.status(500).json({ error: "Erro ao gerar dashboard" });
   }
 });
 
-// ===== Endpoint: campanhas =====
+// ============================
+// 🔹 Endpoint: Lista de campanhas
+// ============================
 app.get("/api/campanhas", (req, res) => {
   try {
     const rows = db.prepare("SELECT DISTINCT campanha FROM logs ORDER BY campanha").all();
     res.json(rows.map(r => r.campanha));
   } catch (err) {
+    console.error("Erro ao listar campanhas:", err);
     res.status(500).json({ error: "Erro ao carregar campanhas" });
   }
 });
 
-// ===== Endpoint: histórico agrupado =====
+// ============================
+// 🔹 Endpoint: Histórico agrupado
+// ============================
 app.get("/api/historico", (req, res) => {
   try {
     const rows = db.prepare("SELECT * FROM logs ORDER BY campanha, criado_em DESC").all();
@@ -96,11 +111,14 @@ app.get("/api/historico", (req, res) => {
     });
     res.json(grouped);
   } catch (err) {
+    console.error("Erro no histórico:", err);
     res.status(500).json({ error: "Erro ao carregar histórico" });
   }
 });
 
-// ===== Endpoint: gráfico por campanha =====
+// ============================
+// 🔹 Endpoint: Gráfico por campanha
+// ============================
 app.get("/api/historico/:campanha", (req, res) => {
   try {
     const rows = db.prepare(
@@ -108,10 +126,15 @@ app.get("/api/historico/:campanha", (req, res) => {
     ).all(req.params.campanha);
     res.json(rows);
   } catch (err) {
+    console.error("Erro gráfico da campanha:", err);
     res.status(500).json({ error: "Erro ao carregar gráfico da campanha" });
   }
 });
 
-// ===== Inicialização =====
+// ============================
+// 🔹 Inicialização
+// ============================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});

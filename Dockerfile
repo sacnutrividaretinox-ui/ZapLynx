@@ -4,7 +4,7 @@ FROM node:18-alpine
 # Criar diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de configuração primeiro (para cache de dependências)
+# Copiar arquivos de configuração primeiro
 COPY package*.json ./
 
 # Instalar dependências

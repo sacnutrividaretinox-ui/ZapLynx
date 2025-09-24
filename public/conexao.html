@@ -6,27 +6,30 @@
   <link rel="stylesheet" href="styles.css">
   <style>
     .main-container {
-      margin-left: 220px; /* espaço da sidebar */
+      margin-left: 240px; /* espaço da sidebar */
       padding: 30px;
     }
     h2 {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: #fff;
     }
     .card {
       background: #1c1c1c;
-      padding: 25px;
-      margin-bottom: 25px;
+      padding: 30px;
+      margin-bottom: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 700px;
     }
     .card h3 {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       color: #ff4d4d;
     }
     .btn {
-      display: inline-block;
-      padding: 12px 20px;
+      display: block;
+      width: 100%;
+      padding: 14px;
       margin-top: 10px;
       border: none;
       border-radius: 6px;
@@ -34,6 +37,7 @@
       font-size: 15px;
       font-weight: bold;
       transition: 0.2s;
+      text-align: center;
     }
     .btn-red {
       background: #ff1a1a;
@@ -47,7 +51,7 @@
       text-align: center;
     }
     .qr-box img {
-      max-width: 250px;
+      max-width: 280px;
       margin-top: 15px;
       border: 3px solid #fff;
       border-radius: 8px;
@@ -55,16 +59,25 @@
     .status {
       margin-top: 12px;
       font-weight: bold;
+      text-align: center;
     }
     .status.ok { color: lime; }
     .status.error { color: #ff3333; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 15px;
+    }
   </style>
 </head>
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo">
-      <img src="logo.png" alt="ZapLynx" style="max-width:120px;">
+      <img src="logo.png" alt="ZapLynx" style="max-width:140px;">
     </div>
     <ul>
       <li><a href="inicio.html">🏠 Início</a></li>
@@ -85,14 +98,14 @@
       <h3>📲 Conectar via QR Code</h3>
       <button class="btn btn-red" onclick="gerarQR()">Gerar QR Code</button>
       <div class="qr-box" id="qrBox">
-        <p class="status error">❌ Não conectado</p>
+        <p class="status error">❌ Nenhum QR retornado</p>
       </div>
     </div>
 
     <!-- Número -->
     <div class="card">
       <h3>📞 Conectar com número</h3>
-      <input type="text" id="numero" placeholder="Ex: 559491234567" style="width:100%;padding:10px;margin-top:10px;border-radius:6px;border:none;">
+      <input type="text" id="numero" placeholder="Ex: 559491234567">
       <button class="btn btn-red" onclick="conectarNumero()">Conectar Número</button>
       <div id="statusNumero" class="status">⌛ Aguardando...</div>
     </div>

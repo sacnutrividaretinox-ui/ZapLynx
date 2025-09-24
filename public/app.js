@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (data.qr) {
-        qrImg.src = data.qr;
+        qrImg.src = data.qr; // já vem pronto
         qrImg.style.display = "block";
         statusText.textContent = "✅ Escaneie o QR Code no WhatsApp";
         statusText.style.color = "limegreen";

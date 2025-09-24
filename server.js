@@ -15,7 +15,7 @@ const ZAPI = {
   clientToken: process.env.ZAPI_CLIENT_TOKEN
 };
 
-// ✅ Rota para QR Code
+// ✅ Rota: QR Code
 app.get("/api/qrcode", async (req, res) => {
   try {
     const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/qr-code/image`;
@@ -25,21 +25,20 @@ app.get("/api/qrcode", async (req, res) => {
     });
 
     const base64 = Buffer.from(response.data, "binary").toString("base64");
-    res.json({ qr: `data:image/png;base64,${base64}` });
+    res.json({ qr: `data:image/png;base64,${base64}` }); // já pronto
   } catch (err) {
     console.error("Erro ao buscar QR:", err.response?.data || err.message);
-    res.status(500).json({ qr: null, error: err.message });
+    res.status(500).json({ qr: null, error: "Erro ao buscar QR Code" });
   }
 });
 
-// ✅ Rota para Status
+// ✅ Rota: Status
 app.get("/api/status", async (req, res) => {
   try {
     const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/status`;
     const response = await axios.get(url, {
       headers: { "Client-Token": ZAPI.clientToken }
     });
-
     res.json(response.data);
   } catch (err) {
     console.error("Erro ao checar Status:", err.response?.data || err.message);
@@ -47,12 +46,12 @@ app.get("/api/status", async (req, res) => {
   }
 });
 
-// ✅ Rota para Enviar Mensagem
+// ✅ Rota: Enviar mensagem
 app.post("/api/send", async (req, res) => {
   try {
     const { phone, message } = req.body;
     if (!phone || !message) {
-      return res.status(400).json({ error: "Número e mensagem são obrigatórios" });
+      return res.status(400).json({ error: "Número e mensagem obrigatórios" });
     }
 
     const url = `https://api.z-api.io/instances/${ZAPI.instanceId}/token/${ZAPI.token}/send-text`;

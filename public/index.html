@@ -33,44 +33,35 @@
     <section class="card">
       <h2>📊 Estatísticas</h2>
       <div class="stats">
-        <div class="stat">
-          <span id="statTotal">0</span>
-          <small>Total</small>
-        </div>
-        <div class="stat">
-          <span id="statSent">0</span>
-          <small>Enviadas</small>
-        </div>
-        <div class="stat">
-          <span id="statPending">0</span>
-          <small>Pendentes</small>
-        </div>
-        <div class="stat">
-          <span id="statFailed">0</span>
-          <small>Falhas</small>
-        </div>
+        <div class="stat" id="statTotal"><span>0</span><small>Total</small></div>
+        <div class="stat" id="statSent"><span>0</span><small>Enviadas</small></div>
+        <div class="stat" id="statPending"><span>0</span><small>Pendentes</small></div>
+        <div class="stat" id="statFailed"><span>0</span><small>Falhas</small></div>
       </div>
     </section>
 
     <!-- Histórico -->
     <section class="card">
-      <h2>Histórico de Mensagens</h2>
-      <button id="refreshBtn">🔄 Atualizar</button>
-      <table id="historyTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Telefone</th>
-            <th>Mensagem</th>
-            <th>Status</th>
-            <th>Criado em</th>
-          </tr>
-        </thead>
-        <tbody id="history"></tbody>
-      </table>
+      <div class="header-flex">
+        <h2>Histórico de Mensagens</h2>
+        <button id="refreshBtn">🔄 Atualizar</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Telefone</th>
+              <th>Mensagem</th>
+              <th>Status</th>
+              <th>Criado em</th>
+            </tr>
+          </thead>
+          <tbody id="history"></tbody>
+        </table>
+      </div>
     </section>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
